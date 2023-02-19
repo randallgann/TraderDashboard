@@ -1,0 +1,16 @@
+﻿@model HomeAccountsViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Welcome To Your Dashboard</h1>
+    <br />
+    <h2>Oanda Account Info:</h2>
+    <br />
+    <p>Account ID: @Model.oanda.account.id</p>
+    <br />
+    <p>Balance: $@Model.oanda.account.balance</p>
+</div>
