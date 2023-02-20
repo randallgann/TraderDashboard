@@ -12,6 +12,7 @@ using TraderDashboardUi.Entity.Oanda;
 using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.Utilities;
 using static TraderDashboardUi.Entity.Oanda.OandaAccountResponse;
+using static TraderDashboardUi.Entity.Oanda.OandaCandlesResponse;
 
 namespace TraderDashboardUi.Repository.Providers
 {
@@ -86,6 +87,78 @@ namespace TraderDashboardUi.Repository.Providers
                 var logErr = new
                 {
                     Description = "Error ocurred in the GetOandaAccount Method",
+                    ex.Message,
+                    ex.StackTrace,
+                    Provider = nameof(OandaDataProvider),
+                    Level = "Exception"
+                };
+
+                _logger.LogError(JsonConvert.SerializeObject(logErr));
+
+                return null;
+            }
+        }
+
+        public async Task<OandaCandles> GetOandaCandles(string instrument, DateTime backTestStartDate, DateTime backTestEndDate)
+        {
+            var logInfo = new
+            {
+                Description = "Get Oanda Candles Method Called -",
+                Provider = nameof(OandaDataProvider)
+            };
+
+            _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
+
+            _restClient ??= new RestClient();
+
+            try
+            {
+                var oandaSettings = _traderDashboardConfigurations.oandaSettings;
+                var endPoint = oandaSettings.Endpoints.FirstOrDefault(x => x.Key == "candles").Value;
+
+                _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+
+                var logOandaCandlesInfo = new
+                {
+                    Description = "Getting candles from oanda for - ",
+                    instrument,
+                    backTestStartDate,
+                    backTestEndDate,
+                    Provider = nameof(OandaDataProvider)
+                };
+
+                _logger.LogInformation(JsonConvert.SerializeObject(logOandaCandlesInfo));
+
+                // create a request
+                var request = new RestRequest(endPoint, Method.Get);
+                request.AddHeader("Authorization", oandaSettings.RequestHeaders.FirstOrDefault(x => x.Key == "Authorization").Value);
+                request.AddUrlSegment("accountId", oandaSettings.Id);
+                request.AddUrlSegment("instrument", instrument);
+                request.AddParameter("from", backTestStartDate);
+                request.AddParameter("to", backTestEndDate);
+                request.AddParameter("granularity", "M1");
+
+                // get api response
+                var taskResponse = Utilites.GetApiResponse(_restClient, request).Result;
+
+                var result = JsonConvert.DeserializeObject<OandaCandles>(taskResponse);
+
+                logInfo = new
+                {
+                    Description = "GetOandaCandles Method Ended - ",
+                    Provider = nameof(OandaDataProvider)
+                };
+
+                _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
+
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                var logErr = new
+                {
+                    Description = "Error ocurred in the GetOandaCandles Method",
                     ex.Message,
                     ex.StackTrace,
                     Provider = nameof(OandaDataProvider),

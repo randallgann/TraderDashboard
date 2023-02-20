@@ -1,0 +1,32 @@
+﻿@model BackTestModel
+
+@{
+    ViewData["Title"] = "BackTest";
+}
+
+<div class="container-fluid alert-danger alert-dismissible">
+    <div asp-validation-summary="All"></div>
+</div>
+
+<div class="card border-0 box-shadow">
+    <div class="card-body">
+        <div class="card border-0 recovery-header">
+            <h4 class="mb-0 pl-2">Back Test Strategy</h4>
+        </div>
+
+        <form id="backtest-form" asp-action="Index" asp-controller="BackTest"
+            data-ajax="true"
+            data-ajax-method="POST"
+            data-ajax-mode="replace"
+            data-ajax-update="#backtest-response"
+            data-ajax-failure="globalDataError"
+            data-ajax-begin="resetResultView">
+
+            @await Html.PartialAsync("_BackTestRequest", Model)
+        </form>
+</div>
+
+@section Scripts
+{
+    <script src="~/js/backtest.js"></script>
+}
