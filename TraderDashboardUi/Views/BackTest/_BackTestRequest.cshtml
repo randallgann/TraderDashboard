@@ -1,0 +1,29 @@
+﻿@model BackTestModel
+
+<div class="form-row">
+    <div class="form-group col-md-6">
+        <label asp-for="Instrument">Select Instrument</label>
+        <select asp-for="Instrument" asp-items="Model.Instruments" class="form-control selectable"></select>
+        <span asp-validation-for="Instrument" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6">
+    <label asp-for="BackTestStartDate"  class="control-label">Choose Start Date</label>
+    <input asp-for="BackTestStartDate" id="startdatepicker" type="text" class="form-control" value="@DateTime.Now.ToString("MM-dd-yyyy")" />
+    <span  asp-validation-for="BackTestStartDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group col-md-6">
+    <label asp-for="BackTestEndDate"  class="control-label">Choose End Date</label>
+    <input asp-for="BackTestEndDate" id="enddatepicker" type="text" class="form-control" value="@DateTime.Now.ToString("MM-dd-yyyy")" />
+    <span  asp-validation-for="BackTestEndDate" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="form-row pt-4">
+    <div class="col-lg-2">
+        <button type="submit" class="btn btn-primary btn-lg box-shadow pl-5 pr-5">Submit</button>
+    </div>
+</div>
