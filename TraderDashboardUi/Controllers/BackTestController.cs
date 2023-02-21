@@ -51,7 +51,10 @@ namespace TraderDashboardUi.Controllers
         private async Task<IActionResult> ProcessBackTest(BackTestViewModel model)
         {
             // get the candles
-            var candles = _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate);
+            var candles = _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate).Result;
+
+            // convert to datatable
+            var dt = Utilites.ConvertOandaCandlesToDataTable(candles);
 
             var backTestResonseViewModel = new BackTestResponseViewModel();
             backTestResonseViewModel.message = model.Instrument;
