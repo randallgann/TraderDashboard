@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using TraderDashboardUi.Entity;
 using TraderDashboardUi.Models;
 using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.Utilities;
 using TraderDashboardUi.ViewModels;
+using static TraderDashboardUi.Models.BackTestResponseViewModel;
 
 namespace TraderDashboardUi.Controllers
 {
@@ -56,9 +58,25 @@ namespace TraderDashboardUi.Controllers
             // convert to datatable
             var dt = Utilites.ConvertOandaCandlesToDataTable(candles);
 
-            var backTestResonseViewModel = new BackTestResponseViewModel();
-            backTestResonseViewModel.message = model.Instrument;
-            return await Task.FromResult(PartialView("_BackTestResponse", backTestResonseViewModel));
+            var backTestResponseViewModel = new BackTestResponseViewModel();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                sample s = new sample();
+                s.Instrument = Convert.ToString(row["Instrument"]);
+                s.Granularity = Convert.ToString(row["Granularity"]);
+                s.Complete = Convert.ToString(row["Complete"]);
+                s.volume = Convert.ToString(row["Volume"]);
+                s.time = Convert.ToString(row["Time"]);
+                s.open = Convert.ToString(row["Open"]);
+                s.high = Convert.ToString(row["High"]);
+                s.low = Convert.ToString(row["Low"]);
+                s.close = Convert.ToString(row["Close"]);
+                backTestResponseViewModel.samples.Add(s);
+
+            }
+
+            return await Task.FromResult(PartialView("_BackTestResponse", backTestResponseViewModel));
         }
 
         private BackTestModel GetInitialModel()

@@ -16,5 +16,6 @@ namespace TraderDashboardUi.Models
         [Required]
         [Display(Name = "BackTestEndDate")]
         public DateTime BackTestEndDate { get; set; }
+
     }
 }
