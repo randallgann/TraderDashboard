@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using TraderDashboardUi.Entity;
 using TraderDashboardUi.Models;
 using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.Utilities;
 using TraderDashboardUi.ViewModels;
+using static TraderDashboardUi.Models.BackTestResponseViewModel;
 
 namespace TraderDashboardUi.Controllers
 {
@@ -51,11 +53,30 @@ namespace TraderDashboardUi.Controllers
         private async Task<IActionResult> ProcessBackTest(BackTestViewModel model)
         {
             // get the candles
-            var candles = _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate);
+            var candles = _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate).Result;
 
-            var backTestResonseViewModel = new BackTestResponseViewModel();
-            backTestResonseViewModel.message = model.Instrument;
-            return await Task.FromResult(PartialView("_BackTestResponse", backTestResonseViewModel));
+            // convert to datatable
+            var dt = Utilites.ConvertOandaCandlesToDataTable(candles);
+
+            var backTestResponseViewModel = new BackTestResponseViewModel();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                Candle c = new Candle();
+                c.Instrument = Convert.ToString(row["Instrument"]);
+                c.Granularity = Convert.ToString(row["Granularity"]);
+                c.Complete = Convert.ToString(row["Complete"]);
+                c.volume = Convert.ToString(row["Volume"]);
+                c.time = Convert.ToString(row["Time"]);
+                c.open = Convert.ToString(row["Open"]);
+                c.high = Convert.ToString(row["High"]);
+                c.low = Convert.ToString(row["Low"]);
+                c.close = Convert.ToString(row["Close"]);
+                backTestResponseViewModel.Candles.Add(c);
+
+            }
+
+            return await Task.FromResult(PartialView("_BackTestResponse", backTestResponseViewModel));
         }
 
         private BackTestModel GetInitialModel()

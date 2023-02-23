@@ -1,7 +1,11 @@
-﻿namespace TraderDashboardUi.Models
+﻿using System.Collections.Generic;
+using System.Data;
+using TraderDashboardUi.Entity;
+
+namespace TraderDashboardUi.Models
 {
     public class BackTestResponseViewModel
     {
-        public string message { get; set; }
+        public List<Candle> Candles { get; set; } = new List<Candle>();
     }
 }

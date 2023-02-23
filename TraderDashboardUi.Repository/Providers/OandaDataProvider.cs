@@ -67,7 +67,7 @@ namespace TraderDashboardUi.Repository.Providers
                 request.AddHeader("Authorization", oandaSettings.RequestHeaders.FirstOrDefault(x => x.Key == "Authorization").Value);
 
                 // get api response
-                var taskResponse = Utilites.GetApiResponse(_restClient, request).Result;
+                var taskResponse = await Utilites.GetApiResponse(_restClient, request);
 
                 var result = JsonConvert.DeserializeObject<OandaAccount>(taskResponse);
 

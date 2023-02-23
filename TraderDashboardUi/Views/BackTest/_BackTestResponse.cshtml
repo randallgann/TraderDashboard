@@ -1,6 +1,40 @@
-﻿@model BackTestResponseViewModel
+﻿@using System.Data
+@model BackTestResponseViewModel
 
 <div class="container-fluid">
-    <h4>@Model.message</h4>
+
+    <h1>Candles Table</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Instrument</th>
+            <th>Granularity</th>
+            <th>Complete</th>
+            <th>Volume</th>
+            <th>Time</th>
+            <th>Open</th>
+            <th>High</th>
+            <th>Low</th>
+            <th>Close</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in @Model.Candles)
+        {
+            <tr>
+                <td>@c.Instrument</td>
+                <td>@c.Granularity</td>
+                <td>@c.Complete</td>
+                <td>@c.volume</td>
+                <td>@c.time</td>
+                <td>@c.open</td>
+                <td>@c.high</td>
+                <td>@c.low</td>
+                <td>@c.close</td>
+            </tr>
+        }
+    </tbody>
+</table>
 </div>
 
