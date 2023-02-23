@@ -62,17 +62,17 @@ namespace TraderDashboardUi.Controllers
 
             foreach (DataRow row in dt.Rows)
             {
-                sample s = new sample();
-                s.Instrument = Convert.ToString(row["Instrument"]);
-                s.Granularity = Convert.ToString(row["Granularity"]);
-                s.Complete = Convert.ToString(row["Complete"]);
-                s.volume = Convert.ToString(row["Volume"]);
-                s.time = Convert.ToString(row["Time"]);
-                s.open = Convert.ToString(row["Open"]);
-                s.high = Convert.ToString(row["High"]);
-                s.low = Convert.ToString(row["Low"]);
-                s.close = Convert.ToString(row["Close"]);
-                backTestResponseViewModel.samples.Add(s);
+                Candle c = new Candle();
+                c.Instrument = Convert.ToString(row["Instrument"]);
+                c.Granularity = Convert.ToString(row["Granularity"]);
+                c.Complete = Convert.ToString(row["Complete"]);
+                c.volume = Convert.ToString(row["Volume"]);
+                c.time = Convert.ToString(row["Time"]);
+                c.open = Convert.ToString(row["Open"]);
+                c.high = Convert.ToString(row["High"]);
+                c.low = Convert.ToString(row["Low"]);
+                c.close = Convert.ToString(row["Close"]);
+                backTestResponseViewModel.Candles.Add(c);
 
             }
 

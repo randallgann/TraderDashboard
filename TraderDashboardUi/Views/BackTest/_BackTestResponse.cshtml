@@ -20,18 +20,18 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var s in @Model.samples)
+        @foreach (var c in @Model.Candles)
         {
             <tr>
-                <td>@s.Instrument</td>
-                <td>@s.Granularity</td>
-                <td>@s.Complete</td>
-                <td>@s.volume</td>
-                <td>@s.time</td>
-                <td>@s.open</td>
-                <td>@s.high</td>
-                <td>@s.low</td>
-                <td>@s.close</td>
+                <td>@c.Instrument</td>
+                <td>@c.Granularity</td>
+                <td>@c.Complete</td>
+                <td>@c.volume</td>
+                <td>@c.time</td>
+                <td>@c.open</td>
+                <td>@c.high</td>
+                <td>@c.low</td>
+                <td>@c.close</td>
             </tr>
         }
     </tbody>
