@@ -48,7 +48,8 @@ namespace TraderDashboardUi.Entity.Indicators
                 return;
             }
 
-            Average = ((value - _previousAverage) * _weightMultiplier) + _previousAverage;
+            int decimalPlaces = dataPoint.ToString().Split('.')[1].Length;
+            Average = Math.Round(((value - _previousAverage) * _weightMultiplier) + _previousAverage, decimalPlaces);
             Slope = Average - _previousAverage;
 
             // update previous average

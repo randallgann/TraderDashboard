@@ -6,7 +6,7 @@ namespace TraderDashboardUi.Entity
 {
     public class TradeBook
     {
-        public List<Position> _positions { get; set; }
+        public List<Position> Positions { get; set; } = new List<Position>();
 
     }
 }
