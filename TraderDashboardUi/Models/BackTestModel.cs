@@ -16,6 +16,9 @@ namespace TraderDashboardUi.Models
         [Required]
         [Display(Name = "BackTestEndDate")]
         public DateTime BackTestEndDate { get; set; }
+        public string Strategy { get; set; }
+
+        public List<SelectListItem> Strategies { get; set; }
 
     }
 }

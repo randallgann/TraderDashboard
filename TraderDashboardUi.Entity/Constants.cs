@@ -37,4 +37,9 @@ namespace TraderDashboardUi.Entity
         public const string USD_SGD = "USD_SGD";
         public const string USD_ZAR = "USD_ZAR";
     }
+
+    public static class TradingStrategies
+    {
+        public const string GUPPYMMA = "GUPPYMMA";
+    }
 }

@@ -11,5 +11,7 @@ namespace TraderDashboardUi.ViewModels
         public DateTime BackTestStartDate { get; set; }
         [Required(ErrorMessage = "Select a End Date")]
         public DateTime BackTestEndDate { get; set; }
+        [Required(ErrorMessage = "Select a Strategy")]
+        public string Strategy { get; set; }
     }
 }

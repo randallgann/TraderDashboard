@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TraderDashboardUi.Entity;
 using TraderDashboardUi.Models;
 using TraderDashboardUi.Repository.Interfaces;
+using TraderDashboardUi.Repository.StrategyProcessors;
 using TraderDashboardUi.Repository.Utilities;
 using TraderDashboardUi.ViewModels;
 using static TraderDashboardUi.Models.BackTestResponseViewModel;
@@ -18,6 +19,7 @@ namespace TraderDashboardUi.Controllers
     {
         private readonly ILogger<BackTestController> _logger;
         private readonly IOandaDataProvider _provider;
+        private IBackTestStrategy _backTestStrategy;
         private readonly TraderDashboardConfigurations _traderDashboardConfigurations;
 
         public BackTestController(ILogger<BackTestController> logger, IOandaDataProvider provider, TraderDashboardConfigurations configurations)
@@ -53,10 +55,23 @@ namespace TraderDashboardUi.Controllers
         private async Task<IActionResult> ProcessBackTest(BackTestViewModel model)
         {
             // get the candles
-            var candles = _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate).Result;
+            var candles = await _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate);
 
             // convert to datatable
             var dt = Utilites.ConvertOandaCandlesToDataTable(candles);
+
+            // get appropriate IBeckTestStrategy - StrategyProcessors
+            var strategyProcessor = GetStrategyProcessor(model.Strategy);
+            if (strategyProcessor == null)
+            {
+                ModelState.AddModelError(string.Empty, "Strategy Processor is null");
+                return View(model);
+            }
+            _backTestStrategy = strategyProcessor;
+
+
+            // execute backtest
+            var backTestResults = _backTestStrategy.ExecuteBackTest(dt);
 
             var backTestResponseViewModel = new BackTestResponseViewModel();
 
@@ -79,14 +94,35 @@ namespace TraderDashboardUi.Controllers
             return await Task.FromResult(PartialView("_BackTestResponse", backTestResponseViewModel));
         }
 
+        private IBackTestStrategy GetStrategyProcessor(string strategy)
+        {
+            switch (strategy)
+            {
+                case "GUPPYMMA":
+                    return new BackTestStrategyGuppyMMA();
+                default:
+                    return null;
+            }
+        }
+
         private BackTestModel GetInitialModel()
         {
             var model = new BackTestModel
             {
                 Instruments = GetBackTestInstruments(),
+                Strategies = GetBackTestStrategies(),
             };
 
             return model;
+        }
+
+        private List<SelectListItem> GetBackTestStrategies()
+        {
+            return new List<SelectListItem>
+            {
+                new SelectListItem { Text = "--Select--", Value = String.Empty},
+                new SelectListItem { Text = TradingStrategies.GUPPYMMA, Value = TradingStrategies.GUPPYMMA},
+            };
         }
 
         private List<SelectListItem> GetBackTestInstruments()
