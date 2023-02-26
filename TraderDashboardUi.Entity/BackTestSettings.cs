@@ -6,10 +6,11 @@ namespace TraderDashboardUi.Entity
 {
     public class BackTestSettings
     {
-        public decimal PipStopLoss { get; set; }
-        public decimal PipTakeProfit { get; set; }
-        public decimal PipSlippageValue { get; set; }
-        public decimal PipTrailingStopLoss { get; set; }
+        public decimal[] PipStopLoss { get; set; }
+        public decimal[] PipTakeProfit { get; set; }
+        public decimal[] PipSlippageValue { get; set; }
+        public decimal[] PipTrailingStopLoss { get; set; }
+        public decimal[] MaxActiveTrades { get; set; }
 
     }
 }
