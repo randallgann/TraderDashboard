@@ -14,6 +14,10 @@ namespace TraderDashboardUi.Repository.Providers
         public int PipTakeProfit { get; set; }
         public int Units { get; set; }
 
+        public int MaxActiveTrades { get; set; }
+
+        
+
         public TradeManager()
         {
             tradeBook = new TradeBook();
