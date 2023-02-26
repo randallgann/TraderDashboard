@@ -9,46 +9,49 @@ namespace TraderDashboardUi.Entity.Indicators
     {
         private readonly int _lookback;
         private bool _isInitialized;
-        private readonly double _weightMultiplier;
-        private double _previousAverage;
+        private readonly decimal _weightMultiplier;
+        private decimal _previousAverage;
 
-        public double Average { get; private set; }
-        public double Slope { get; private set; }
+        public decimal Average { get; private set; }
+        public decimal Slope { get; private set; }
 
 
         public EMA(int lookback)
         {
             _lookback = lookback;
-            _weightMultiplier = 2.0 / (lookback + 1);
+            var decimalLookback = Convert.ToDecimal(lookback);
+            _weightMultiplier = (decimal)2.0 / (decimalLookback + 1);
         }
 
-        public void AddDataPoint(object dataPoint)
+        public void AddDataPoint(decimal dataPoint)
         {
-            var value = new double();
-            try
-            {
-                value = double.Parse((dataPoint as string).Trim(), CultureInfo.InvariantCulture);
-            }
-            catch (Exception ex)
-            {
-                var parseDecimalErr = new
-                {
-                    Description = $"Error in EMA{_lookback} occurred while trying to parse price string into decimal.",
-                    ex.Message,
-                    ex.StackTrace
-                };
-            }
+            //var value = new decimal();
+            //try
+            //{
+            //    value = decimal.Parse((dataPoint as string).Trim());
+            //}
+            //catch (Exception ex)
+            //{
+            //    var parseDecimalErr = new
+            //    {
+            //        Description = $"Error in EMA{_lookback} occurred while trying to parse price string into decimal.",
+            //        ex.Message,
+            //        ex.StackTrace
+            //    };
+            //}
 
             if(!_isInitialized)
             {
-                Average = value;
+                Average = dataPoint;
                 Slope = 0;
                 _previousAverage = Average;
                 _isInitialized = true;
                 return;
             }
 
-            Average = ((value - _previousAverage) * _weightMultiplier) + _previousAverage;
+            double dataPointDouble = (double)dataPoint;
+            int decimalPlaces = dataPointDouble.ToString().Split('.')[1].Length;
+            Average = Math.Round(((dataPoint - _previousAverage) * _weightMultiplier) + _previousAverage, decimalPlaces);
             Slope = Average - _previousAverage;
 
             // update previous average

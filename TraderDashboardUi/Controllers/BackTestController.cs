@@ -21,12 +21,14 @@ namespace TraderDashboardUi.Controllers
         private readonly IOandaDataProvider _provider;
         private IBackTestStrategy _backTestStrategy;
         private readonly TraderDashboardConfigurations _traderDashboardConfigurations;
+        private readonly ITradeManager _tradeManager;
 
-        public BackTestController(ILogger<BackTestController> logger, IOandaDataProvider provider, TraderDashboardConfigurations configurations)
+        public BackTestController(ILogger<BackTestController> logger, IOandaDataProvider provider, TraderDashboardConfigurations configurations, ITradeManager tradeManager)
         {
             _logger = logger;
             _provider = provider;
             _traderDashboardConfigurations = configurations;
+            _tradeManager = tradeManager;
         }
 
         [HttpGet]
@@ -40,6 +42,7 @@ namespace TraderDashboardUi.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(BackTestViewModel model)
         {
+            // add error handling for when candles count is too large
             try
             {
                 return await ProcessBackTest(model);
@@ -65,6 +68,7 @@ namespace TraderDashboardUi.Controllers
             if (strategyProcessor == null)
             {
                 ModelState.AddModelError(string.Empty, "Strategy Processor is null");
+                // ToDo: fix return of error message
                 return View(model);
             }
             _backTestStrategy = strategyProcessor;
@@ -72,6 +76,10 @@ namespace TraderDashboardUi.Controllers
 
             // execute backtest
             var backTestResults = _backTestStrategy.ExecuteBackTest(dt);
+
+            // execute trades
+            // I'm able to return tradeResults but the PL is off
+            var tradeResults = _tradeManager.BackTestExecuteTrades(backTestResults);
 
             var backTestResponseViewModel = new BackTestResponseViewModel();
 

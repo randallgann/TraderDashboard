@@ -52,6 +52,7 @@ namespace TraderDashboardUi
             services.AddSingleton(traderDashboardConfigurations);
             services.AddTransient<RestClient>();
             services.AddScoped<IOandaDataProvider, OandaDataProvider>();
+            services.AddScoped<ITradeManager, TradeManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

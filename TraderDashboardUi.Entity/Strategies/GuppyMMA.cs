@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Reflection;
 using TraderDashboardUi.Entity.Indicators;
 
 namespace TraderDashboardUi.Entity.Strategies
@@ -24,47 +27,41 @@ namespace TraderDashboardUi.Entity.Strategies
 
         public GuppyMMA()
         {
-            //_3EMA = new EMA(3);
             ShortTermEMA.Add(_3EMA = new EMA(3));
-            //_5EMA = new EMA(5);
             ShortTermEMA.Add(_5EMA = new EMA(5));
-            //_8EMA = new EMA(8);
             ShortTermEMA.Add(_8EMA = new EMA(8));
-            //_10EMA = new EMA(10);
             ShortTermEMA.Add(_10EMA = new EMA(10));
-            //_12EMA = new EMA(12);
             ShortTermEMA.Add(_12EMA = new EMA(12));
-            //_15EMA = new EMA(15);
             ShortTermEMA.Add(_15EMA = new EMA(15));
-            //_30EMA = new EMA(30);
             LongTermEMA.Add(_30EMA = new EMA(30));
-            //_35EMA = new EMA(35);
             LongTermEMA.Add(_35EMA = new EMA(35));
-            //_40EMA = new EMA(40);
             LongTermEMA.Add(_40EMA = new EMA(40));
-            //_45EMA = new EMA(45);
             LongTermEMA.Add(_45EMA = new EMA(45));
-            //_50EMA = new EMA(50);
             LongTermEMA.Add(_50EMA = new EMA(50));
-            //_60EMA = new EMA(60);
             LongTermEMA.Add(_60EMA = new EMA(60));
         }
 
         public void UpdateAllEMA(DataRow dataRow)
         {
             // remove the lists
-            foreach (EMA ema in ShortTermEMA)
+            PropertyInfo[] emaProperties = typeof(GuppyMMA).GetProperties(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                                                            .Where(prop => prop.PropertyType == typeof(EMA))
+                                                            .ToArray();
+
+            foreach (PropertyInfo emaProperty in emaProperties)
             {
-                ema.AddDataPoint(dataRow["Close"]);
+                var s = emaProperty.Name;
+                EMA ema = (EMA)emaProperty.GetValue(this);
+                ema.AddDataPoint(Convert.ToDecimal(dataRow["Close"]));
+                dataRow[emaProperty.Name] = ema.Average;
             }
-            foreach (EMA ema in LongTermEMA)
-            {
-                ema.AddDataPoint(dataRow["Close"]);
-            }
+
+            var signalResult = TestForSignal(dataRow);
+            dataRow["Signal"] = signalResult;
 
         }
 
-        public int TestForSignal()
+        public int TestForSignal(DataRow dataRow)
         {
             bool allLess = true;
             bool allGreater = true;
@@ -91,18 +88,18 @@ namespace TraderDashboardUi.Entity.Strategies
 
         public DataTable ArrangeDataTable(DataTable dataTable)
         {
-            dataTable.Columns.Add("EMA3");
-            dataTable.Columns.Add("EMA5");
-            dataTable.Columns.Add("EMA8");
-            dataTable.Columns.Add("EMA10");
-            dataTable.Columns.Add("EMA12");
-            dataTable.Columns.Add("EMA15");
-            dataTable.Columns.Add("EMA30");
-            dataTable.Columns.Add("EMA35");
-            dataTable.Columns.Add("EMA40");
-            dataTable.Columns.Add("EMA45");
-            dataTable.Columns.Add("EMA50");
-            dataTable.Columns.Add("EMA60");
+            dataTable.Columns.Add("_3EMA");
+            dataTable.Columns.Add("_5EMA");
+            dataTable.Columns.Add("_8EMA");
+            dataTable.Columns.Add("_10EMA");
+            dataTable.Columns.Add("_12EMA");
+            dataTable.Columns.Add("_15EMA");
+            dataTable.Columns.Add("_30EMA");
+            dataTable.Columns.Add("_35EMA");
+            dataTable.Columns.Add("_40EMA");
+            dataTable.Columns.Add("_45EMA");
+            dataTable.Columns.Add("_50EMA");
+            dataTable.Columns.Add("_60EMA");
             dataTable.Columns.Add("Signal");
 
             return dataTable;

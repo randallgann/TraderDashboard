@@ -14,17 +14,15 @@ namespace TraderDashboardUi.Repository.StrategyProcessors
         private bool _isInitialized = false;
         private List<Candle> _candles = new List<Candle>();
         private GuppyMMA _strategy = new GuppyMMA();
-        private ITradeManager _tradeManager = new TradeManager();
 
         public BackTestStrategyGuppyMMA()
         { }
 
-        public BackTestStrategyGuppyMMA(bool isInitialized, List<Candle> candles, GuppyMMA strategy, ITradeManager tradeManager)
+        public BackTestStrategyGuppyMMA(bool isInitialized, List<Candle> candles, GuppyMMA strategy)
         {
             _isInitialized = isInitialized;
             _candles = candles;
             _strategy = strategy;
-            _tradeManager = tradeManager;
         }
 
         public DataTable CreateDataTable()
@@ -41,9 +39,8 @@ namespace TraderDashboardUi.Repository.StrategyProcessors
             foreach (DataRow dw in dt.Rows)
             {
                 _strategy.UpdateAllEMA(dw);
-
-                // if signal - execute trade
             }
+
             return dt;
         }
 
