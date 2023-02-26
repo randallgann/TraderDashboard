@@ -32,15 +32,16 @@ namespace TraderDashboardUi.Repository.Providers
                 if (dr["Signal"].ToString() == "1")
                 {
                     Random rand = new Random();
+                    int decimalPlaces = dr["Close"].ToString().Split('.')[1].Length;
                     var trade = new Position
                     {
                         TransactionId = rand.Next(100, 1000).ToString(),
                         Time = Convert.ToDateTime(dr["Time"]),
                         Instrument = dr["Instrument"].ToString(),
-                        Price = Convert.ToDouble(dr["Close"]),
+                        Price = Convert.ToDecimal(dr["Close"]),
                         BackTestActive = true,
-                        BackTestPipStopLoss = Convert.ToDouble(dr["Close"]) + .0010,
-                        BackTestPipTakeProfit = Convert.ToDouble(dr["Close"]) - .0010,
+                        BackTestPipStopLoss = Math.Round(Convert.ToDecimal(dr["Close"]) + (decimal).0010, decimalPlaces),
+                        BackTestPipTakeProfit = Math.Round(Convert.ToDecimal(dr["Close"]) - (decimal).0010, decimalPlaces),
                         BackTestBuySell = "Sell"
                     };
 
@@ -49,15 +50,16 @@ namespace TraderDashboardUi.Repository.Providers
                 else if (dr["Signal"].ToString() == "2")
                 {
                     Random rand = new Random();
+                    int decimalPlaces = dr["Close"].ToString().Split('.')[1].Length;
                     var trade = new Position
                     {
                         TransactionId = rand.Next(100, 1000).ToString(),
                         Time = Convert.ToDateTime(dr["Time"]),
                         Instrument = dr["Instrument"].ToString(),
-                        Price = Convert.ToDouble(dr["Close"]),
+                        Price = Convert.ToDecimal(dr["Close"]),
                         BackTestActive = true,
-                        BackTestPipStopLoss = Convert.ToDouble(dr["Close"]) - .0010,
-                        BackTestPipTakeProfit = Convert.ToDouble(dr["Close"]) + .0010,
+                        BackTestPipStopLoss = Math.Round(Convert.ToDecimal(dr["Close"]) - (decimal).0010, decimalPlaces),
+                        BackTestPipTakeProfit = Math.Round(Convert.ToDecimal(dr["Close"]) + (decimal).0010, decimalPlaces),
                         BackTestBuySell = "Buy"
                     };
 
@@ -66,7 +68,8 @@ namespace TraderDashboardUi.Repository.Providers
                 
                 if (tradeBook.Positions.Count > 0)
                 {
-                    double currentPrice = Convert.ToDouble(dr["Close"]);
+                    int decimalPlaces = dr["Close"].ToString().Split('.')[1].Length;
+                    decimal currentPrice = Convert.ToDecimal(dr["Close"]);
                     foreach (var pos in tradeBook.Positions)
                     {
                         if (pos.BackTestActive)
@@ -77,13 +80,13 @@ namespace TraderDashboardUi.Repository.Providers
                                 {
                                     pos.BackTestActive = false;
                                     pos.BackTestClosePositionPrice = pos.BackTestPipStopLoss;
-                                    pos.BackTestClosePositionPL = pos.BackTestPipStopLoss - pos.Price;
+                                    pos.BackTestClosePositionPL = Math.Round(pos.BackTestPipStopLoss - pos.Price, decimalPlaces);
                                 }
                                 else if (currentPrice >= pos.BackTestPipTakeProfit)
                                 {
                                     pos.BackTestActive = false;
                                     pos.BackTestClosePositionPrice = pos.BackTestPipTakeProfit;
-                                    pos.BackTestClosePositionPL = pos.BackTestPipTakeProfit - pos.Price;
+                                    pos.BackTestClosePositionPL = Math.Round(pos.BackTestPipTakeProfit - pos.Price, decimalPlaces);
                                 }
                             }
 
@@ -93,13 +96,13 @@ namespace TraderDashboardUi.Repository.Providers
                                 {
                                     pos.BackTestActive = false;
                                     pos.BackTestClosePositionPrice = pos.BackTestPipStopLoss;
-                                    pos.BackTestClosePositionPL = pos.BackTestPipStopLoss - pos.Price;
+                                    pos.BackTestClosePositionPL = Math.Round(pos.Price - pos.BackTestPipStopLoss, decimalPlaces);
                                 }
                                 else if (currentPrice <= pos.BackTestPipTakeProfit)
                                 {
                                     pos.BackTestActive = false;
                                     pos.BackTestClosePositionPrice = pos.BackTestPipTakeProfit;
-                                    pos.BackTestClosePositionPL = pos.BackTestPipTakeProfit - pos.Price;
+                                    pos.BackTestClosePositionPL = Math.Round(pos.Price - pos.BackTestPipTakeProfit, decimalPlaces);
                                 }
                             }
                         }

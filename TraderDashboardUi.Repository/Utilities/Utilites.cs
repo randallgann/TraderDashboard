@@ -28,10 +28,10 @@ namespace TraderDashboardUi.Repository.Utilities
             dt.Columns.Add("Complete", typeof(bool));
             dt.Columns.Add("Volume", typeof(int));
             dt.Columns.Add("Time", typeof(string));
-            dt.Columns.Add("Open", typeof(string));
-            dt.Columns.Add("High", typeof(string));
-            dt.Columns.Add("Low", typeof(string));
-            dt.Columns.Add("Close", typeof(string));
+            dt.Columns.Add("Open", typeof(decimal));
+            dt.Columns.Add("High", typeof(decimal));
+            dt.Columns.Add("Low", typeof(decimal));
+            dt.Columns.Add("Close", typeof(decimal));
 
             // loop through the candles array and add a new row for each candle
             foreach (Candle candle in ocandles.candles)
@@ -42,10 +42,10 @@ namespace TraderDashboardUi.Repository.Utilities
                 dr["Complete"] = candle.complete;
                 dr["Volume"] = candle.volume;
                 dr["Time"] = candle.time;
-                dr["Open"] = candle.mid.o;
-                dr["High"] = candle.mid.h;
-                dr["Low"] = candle.mid.l;
-                dr["Close"] = candle.mid.c;
+                dr["Open"] = Convert.ToDecimal(candle.mid.o);
+                dr["High"] = Convert.ToDecimal(candle.mid.h);
+                dr["Low"] = Convert.ToDecimal(candle.mid.l);
+                dr["Close"] = Convert.ToDecimal(candle.mid.c);
                 dt.Rows.Add(dr);
             }
 

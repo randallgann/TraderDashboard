@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
@@ -51,7 +52,7 @@ namespace TraderDashboardUi.Entity.Strategies
             {
                 var s = emaProperty.Name;
                 EMA ema = (EMA)emaProperty.GetValue(this);
-                ema.AddDataPoint(dataRow["Close"]);
+                ema.AddDataPoint(Convert.ToDecimal(dataRow["Close"]));
                 dataRow[emaProperty.Name] = ema.Average;
             }
 
