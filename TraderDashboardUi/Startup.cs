@@ -44,12 +44,28 @@ namespace TraderDashboardUi
             var apiServiceRegistrySettings = new ApiServiceRegistrySettings();
             _configuration.GetSection("ApiServiceRegistrySettings").Bind(apiServiceRegistrySettings);
 
+            var backTestRegistrySettings = new BackTestRegistrySettings();
+            _configuration.GetSection("BackTestSettings").Bind(backTestRegistrySettings);
+
             var traderDashboardConfigurations = new TraderDashboardConfigurations
             {
                 oandaSettings = apiServiceRegistrySettings.Oanda
             };
 
+            var backTestSettings = new BackTestSettings()
+            {
+                PipStopLoss = backTestRegistrySettings.PipStopLoss.Select(s => decimal.Parse(s)).ToArray(),
+                PipTakeProfit = backTestRegistrySettings.PipTakeProfit.Select(s => decimal.Parse(s)).ToArray(),
+                PipSlippageValue = backTestRegistrySettings.PipSlippageValue.Select(s => decimal.Parse(s)).ToArray(),
+                PipTrailingStopLoss = backTestRegistrySettings.PipTrailingStopLoss.Select(s => decimal.Parse(s)).ToArray(),
+                MaxActiveTrades = backTestRegistrySettings.MaxActiveTrades.Select(s => decimal.Parse(s)).ToArray()
+            };
+
+            var tradeBook = new TradeBook();
+
             services.AddSingleton(traderDashboardConfigurations);
+            services.AddSingleton(backTestSettings);
+            services.AddSingleton(tradeBook);
             services.AddTransient<RestClient>();
             services.AddScoped<IOandaDataProvider, OandaDataProvider>();
             services.AddScoped<ITradeManager, TradeManager>();
