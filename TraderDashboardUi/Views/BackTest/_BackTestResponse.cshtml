@@ -1,40 +1,50 @@
-﻿@using System.Data
-@model BackTestResponseViewModel
+﻿@model BackTestResponseViewModel
 
-<div class="container-fluid">
-
-    <h1>Candles Table</h1>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Instrument</th>
-            <th>Granularity</th>
-            <th>Complete</th>
-            <th>Volume</th>
-            <th>Time</th>
-            <th>Open</th>
-            <th>High</th>
-            <th>Low</th>
-            <th>Close</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in @Model.Candles)
-        {
-            <tr>
-                <td>@c.Instrument</td>
-                <td>@c.Granularity</td>
-                <td>@c.Complete</td>
-                <td>@c.volume</td>
-                <td>@c.time</td>
-                <td>@c.open</td>
-                <td>@c.high</td>
-                <td>@c.low</td>
-                <td>@c.close</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="row">
+    <div class="col-12 tabulator">
+        <table class="table table-condensed table-striped table-hover table-sm" id=tabulator_table>
+            <thead>
+                <tr class="table-primary">
+                    <th>Instrument</th>
+                    <th>Granularity</th>
+                    <th>Complete</th>
+                    <th>Volume</th>
+                    <th>Time</th>
+                    <th>Open</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Close</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in @Model.Candles)
+                {
+                    <tr>
+                        <td>@c.Instrument</td>
+                        <td>@c.Granularity</td>
+                        <td>@c.Complete</td>
+                        <td>@c.volume</td>
+                        <td>@c.time</td>
+                        <td>@c.open</td>
+                        <td>@c.high</td>
+                        <td>@c.low</td>
+                        <td>@c.close</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<script>
+$(document).ready(function () {
+    var table = new Tabulator("#tabulator_table", {
+        height: "40vh",
+        layout: "fitDataStretch",
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [10,20,30,50,100]
+    });
+});
+</script>
 
