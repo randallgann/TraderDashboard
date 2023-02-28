@@ -6,6 +6,9 @@ namespace TraderDashboardUi.Models
 {
     public class BackTestResponseViewModel
     {
-        public List<Candle> Candles { get; set; } = new List<Candle>();
+        public List<Dictionary<string, object>> CandlesPlusBackTest { get; set; } = new List<Dictionary<string, object>>();
+
+        public TradeBook PositionsList { get; set; }
+        public BackTestResultStats Stats { get; set; }
     }
 }

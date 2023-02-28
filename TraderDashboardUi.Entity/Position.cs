@@ -24,6 +24,8 @@ namespace TraderDashboardUi.Entity
         public decimal BackTestPipTakeProfit { get; set; }
         public string BackTestBuySell { get; set; }
 
+        public bool BackTestWinLoss { get; set; }
+
         public decimal BackTestClosePositionPrice { get; set; }
         public decimal BackTestClosePositionPL { get; set; }
 
