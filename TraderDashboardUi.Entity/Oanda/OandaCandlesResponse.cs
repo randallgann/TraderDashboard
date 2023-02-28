@@ -11,10 +11,10 @@ namespace TraderDashboardUi.Entity.Oanda
         {
             public string instrument { get; set; }
             public string granularity { get; set; }
-            public Candle[] candles { get; set; }
+            public OCandle[] candles { get; set; }
         }
 
-        public class Candle
+        public class OCandle
         {
             public bool complete { get; set; }
             public int volume { get; set; }

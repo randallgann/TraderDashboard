@@ -2,33 +2,23 @@
 
 <div class="row">
     <div class="col-12 tabulator">
-        <table class="table table-condensed table-striped table-hover table-sm" id=tabulator_table>
+        <table class="table table-condensed table-striped table-hover table-sm" id=CandlesPlusBackTestTable>
             <thead>
                 <tr class="table-primary">
-                    <th>Instrument</th>
-                    <th>Granularity</th>
-                    <th>Complete</th>
-                    <th>Volume</th>
-                    <th>Time</th>
-                    <th>Open</th>
-                    <th>High</th>
-                    <th>Low</th>
-                    <th>Close</th>
+                    @foreach (var key in @Model.CandlesPlusBackTest.First().Keys)
+                    {
+                        <th>@key</th>
+                    }
                 </tr>
             </thead>
             <tbody>
-                @foreach (var c in @Model.Candles)
+                @foreach (var row in @Model.CandlesPlusBackTest)
                 {
                     <tr>
-                        <td>@c.Instrument</td>
-                        <td>@c.Granularity</td>
-                        <td>@c.Complete</td>
-                        <td>@c.volume</td>
-                        <td>@c.time</td>
-                        <td>@c.open</td>
-                        <td>@c.high</td>
-                        <td>@c.low</td>
-                        <td>@c.close</td>
+                        @foreach (var value in row.Values)
+                        {
+                            <td>@value</td>
+                        }
                     </tr>
                 }
             </tbody>
@@ -36,15 +26,104 @@
     </div>
 </div>
 
+<br />
+<br />
+
+<div class="row">
+    <div class="col-12 tabulator">
+        <table class="table table-condensed table-striped table-hover table-sm" id=BackTestTradesTable>
+            <thead>
+                <tr class="table-primary">
+                    <th>Transaction Id</th>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Instrument</th>
+                    <th>Units</th>
+                    <th>Price</th>
+                    <th>Bid Price</th>
+                    <th>Ask Price</th>
+                    <th>BackTest Pip Stop Loss</th>
+                    <th>BackTest Pip Take Profit</th>
+                    <th>BackTest Buy Sell</th>
+                    <th>BackTest Win Loss</th>
+                    <th>BackTest Close Position Price</th>
+                    <th>BackTest Close Position PL</th>
+                    <th>BackTest Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var position in @Model.PositionsList.Positions)
+                {
+                <tr>
+                    <td>@position.TransactionId</td>
+                    <td>@position.Time</td>
+                    <td>@position.Type</td>
+                    <td>@position.Instrument</td>
+                    <td>@position.Units</td>
+                    <td>@position.Price</td>
+                    <td>@position.BidPrice</td>
+                    <td>@position.AskPrice</td>
+                    <td>@position.BackTestPipStopLoss</td>
+                    <td>@position.BackTestPipTakeProfit</td>
+                    <td>@position.BackTestBuySell</td>
+                    <td>@position.BackTestWinLoss</td>
+                    <td>@position.BackTestClosePositionPrice</td>
+                    <td>@position.BackTestClosePositionPL</td>
+                    <td>@position.BackTestActive</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<br />
+<br />
+
+<div class="row">
+    <div class="col-12 tabulator">
+        <table class="table table-condensed table-striped table-hover table-sm" id=StatsTable>
+            <thead>
+                <tr class="table-primary">
+                    <th>Total Trades</th>
+                    <th>Total Wins</th>
+                    <th>Total Loss</th>
+                    <th>Total P/L</th>
+                    <th>Win/Loss Ratio</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@Model.Stats.TotalTradesExecuted</td>
+                    <td>@Model.Stats.TotalWins</td>
+                    <td>@Model.Stats.TotalLoss</td>
+                    <td>@Model.Stats.TotalPL</td>
+                    <td>@Model.Stats.WinLossRatio</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <script>
 $(document).ready(function () {
-    var table = new Tabulator("#tabulator_table", {
+    var table1 = new Tabulator("#CandlesPlusBackTestTable", {
         height: "40vh",
         layout: "fitDataStretch",
         pagination: "local",
         paginationSize: 10,
         paginationSizeSelector: [10,20,30,50,100]
     });
+
+    var table2 = new Tabulator("#BackTestTradesTable", {
+        height: "40vh",
+        layout: "fitDataStretch",
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [10,20,30,50,100]
+    });
+
+    var table3 = new Tabulator("#StatsTable", {});
 });
 </script>
 

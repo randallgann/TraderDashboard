@@ -100,6 +100,7 @@ namespace TraderDashboardUi.Repository.Providers
                                         pos.BackTestClosePositionPrice = pos.BackTestPipStopLoss;
                                         pos.BackTestClosePositionPL = Math.Round(pos.BackTestPipStopLoss - pos.Price, decimalPlaces);
                                         pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
+                                        pos.BackTestWinLoss = false;
                                     }
                                     else if (currentPrice >= pos.BackTestPipTakeProfit)
                                     {
@@ -107,6 +108,7 @@ namespace TraderDashboardUi.Repository.Providers
                                         pos.BackTestClosePositionPrice = pos.BackTestPipTakeProfit;
                                         pos.BackTestClosePositionPL = Math.Round(pos.BackTestPipTakeProfit - pos.Price, decimalPlaces);
                                         pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
+                                        pos.BackTestWinLoss = true;
                                     }
                                 }
 
@@ -118,6 +120,7 @@ namespace TraderDashboardUi.Repository.Providers
                                         pos.BackTestClosePositionPrice = pos.BackTestPipStopLoss;
                                         pos.BackTestClosePositionPL = Math.Round(pos.Price - pos.BackTestPipStopLoss, decimalPlaces);
                                         pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
+                                        pos.BackTestWinLoss = false;
                                     }
                                     else if (currentPrice <= pos.BackTestPipTakeProfit)
                                     {
@@ -125,6 +128,7 @@ namespace TraderDashboardUi.Repository.Providers
                                         pos.BackTestClosePositionPrice = pos.BackTestPipTakeProfit;
                                         pos.BackTestClosePositionPL = Math.Round(pos.Price - pos.BackTestPipTakeProfit, decimalPlaces);
                                         pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
+                                        pos.BackTestWinLoss = true;
                                     }
                                 }
                             }

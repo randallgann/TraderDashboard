@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using TraderDashboardUi.Entity;
 using static TraderDashboardUi.Entity.Oanda.OandaCandlesResponse;
 
 namespace TraderDashboardUi.Repository.Utilities
@@ -34,7 +36,7 @@ namespace TraderDashboardUi.Repository.Utilities
             dt.Columns.Add("Close", typeof(decimal));
 
             // loop through the candles array and add a new row for each candle
-            foreach (Candle candle in ocandles.candles)
+            foreach (OCandle candle in ocandles.candles)
             {
                 DataRow dr = dt.NewRow();
                 dr["Instrument"] = ocandles.instrument;
@@ -50,6 +52,41 @@ namespace TraderDashboardUi.Repository.Utilities
             }
 
             return dt;
+        }
+
+        public static List<Dictionary<string, object>> ConvertBackTestResultsToDictionary(DataTable backTestResults, string strategy)
+        {
+            List<Dictionary<string, object>> backTestResultsList = new List<Dictionary<string, object>>();
+            switch (strategy)
+            {
+                case "GUPPYMMA":
+                    foreach (DataRow row in backTestResults.Rows)
+                    {
+                        var rowDict = new Dictionary<string, object>();
+                        rowDict["Time"] = row["Time"];
+                        rowDict["Instrument"] = row["Instrument"];
+                        rowDict["Granulatiry"] = row["Granularity"];
+                        rowDict["3EMA"] = row["_3EMA"];
+                        backTestResultsList.Add(rowDict);
+                    }
+                    return backTestResultsList;
+                default:
+                    return null;
+            }
+        }
+
+        public static BackTestResultStats CalculateBackTestStats(TradeBook backTestTrades)
+        {
+            BackTestResultStats backTestResultStats = new BackTestResultStats();
+            backTestResultStats.TotalPL = backTestTrades.Positions.Sum(p => p.BackTestClosePositionPL);
+            int numberofWins = backTestTrades.Positions.Count(p => p.BackTestWinLoss);
+            int numberofLoss = backTestTrades.Positions.Count(p => !p.BackTestWinLoss);
+            int totalTradesExecuted = backTestTrades.Positions.Count();
+            backTestResultStats.WinLossRatio = (decimal)numberofWins / backTestTrades.Positions.Count * 100;
+            backTestResultStats.TotalLoss = numberofLoss;
+            backTestResultStats.TotalWins = numberofWins;
+            backTestResultStats.TotalTradesExecuted = totalTradesExecuted;
+            return backTestResultStats;
         }
     }
 }

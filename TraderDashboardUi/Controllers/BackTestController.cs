@@ -61,7 +61,7 @@ namespace TraderDashboardUi.Controllers
             var candles = await _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate);
 
             // convert to datatable
-            var dt = Utilites.ConvertOandaCandlesToDataTable(candles);
+            DataTable dt = Utilites.ConvertOandaCandlesToDataTable(candles);
 
             // get appropriate IBeckTestStrategy - StrategyProcessors
             var strategyProcessor = GetStrategyProcessor(model.Strategy);
@@ -75,31 +75,43 @@ namespace TraderDashboardUi.Controllers
 
 
             // execute backtest
-            var backTestResults = _backTestStrategy.ExecuteBackTest(dt);
+            DataTable backTestResults = _backTestStrategy.ExecuteBackTest(dt);
 
             // execute trades
-            // I'm able to return tradeResults but the PL is off
-            var tradeResults = _tradeManager.BackTestExecuteTrades(backTestResults);
+            TradeBook tradeResults = _tradeManager.BackTestExecuteTrades(backTestResults);
 
-            var backTestResponseViewModel = new BackTestResponseViewModel();
+            BackTestResponseViewModel backTestResponseViewModel = GetBackTestResponseViewModel(backTestResults, tradeResults, model.Strategy);
 
-            foreach (DataRow row in dt.Rows)
-            {
-                Candle c = new Candle();
-                c.Instrument = Convert.ToString(row["Instrument"]);
-                c.Granularity = Convert.ToString(row["Granularity"]);
-                c.Complete = Convert.ToString(row["Complete"]);
-                c.volume = Convert.ToString(row["Volume"]);
-                c.time = Convert.ToString(row["Time"]);
-                c.open = Convert.ToString(row["Open"]);
-                c.high = Convert.ToString(row["High"]);
-                c.low = Convert.ToString(row["Low"]);
-                c.close = Convert.ToString(row["Close"]);
-                backTestResponseViewModel.Candles.Add(c);
+            //foreach (DataRow row in dt.Rows)
+            //{
+            //    Candle c = new Candle();
+            //    c.Instrument = Convert.ToString(row["Instrument"]);
+            //    c.Granularity = Convert.ToString(row["Granularity"]);
+            //    c.Complete = Convert.ToString(row["Complete"]);
+            //    c.volume = Convert.ToString(row["Volume"]);
+            //    c.time = Convert.ToString(row["Time"]);
+            //    c.open = Convert.ToString(row["Open"]);
+            //    c.high = Convert.ToString(row["High"]);
+            //    c.low = Convert.ToString(row["Low"]);
+            //    c.close = Convert.ToString(row["Close"]);
+            //    backTestResponseViewModel.Candles.Add(c);
 
-            }
+            //}
+
+
 
             return await Task.FromResult(PartialView("_BackTestResponse", backTestResponseViewModel));
+        }
+
+        private BackTestResponseViewModel GetBackTestResponseViewModel(DataTable backTestResults, TradeBook tradeResults, string strategy)
+        {
+            BackTestResponseViewModel model = new BackTestResponseViewModel();
+            List<Dictionary<string, object>> backTestResultsDictionary = Utilites.ConvertBackTestResultsToDictionary(backTestResults, strategy);
+            BackTestResultStats backTestResultStats = Utilites.CalculateBackTestStats(tradeResults);
+            model.Stats = backTestResultStats;
+            model.CandlesPlusBackTest = backTestResultsDictionary;
+            model.PositionsList = tradeResults;
+            return model;
         }
 
         private IBackTestStrategy GetStrategyProcessor(string strategy)
