@@ -60,6 +60,9 @@ namespace TraderDashboardUi.Controllers
             // get the candles
             var candles = await _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate);
 
+            // get the number of decimal places in the close value of the pair
+            int decimalPlaces = candles.candles[0].mid.c.ToString().Split(".")[1].Length;
+
             // convert to datatable
             DataTable dt = Utilites.ConvertOandaCandlesToDataTable(candles);
 
@@ -75,7 +78,7 @@ namespace TraderDashboardUi.Controllers
 
 
             // execute backtest
-            DataTable backTestResults = _backTestStrategy.ExecuteBackTest(dt);
+            DataTable backTestResults = _backTestStrategy.ExecuteBackTest(dt, decimalPlaces);
 
             // execute trades
             TradeBook tradeResults = _tradeManager.BackTestExecuteTrades(backTestResults);

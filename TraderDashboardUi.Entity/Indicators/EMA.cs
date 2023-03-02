@@ -23,7 +23,7 @@ namespace TraderDashboardUi.Entity.Indicators
             _weightMultiplier = (decimal)2.0 / (decimalLookback + 1);
         }
 
-        public void AddDataPoint(decimal dataPoint)
+        public void AddDataPoint(decimal dataPoint, int decimalPlaces)
         {
             //var value = new decimal();
             //try
@@ -50,7 +50,6 @@ namespace TraderDashboardUi.Entity.Indicators
             }
 
             double dataPointDouble = (double)dataPoint;
-            int decimalPlaces = dataPointDouble.ToString().Split('.')[1].Length;
             Average = Math.Round(((dataPoint - _previousAverage) * _weightMultiplier) + _previousAverage, decimalPlaces);
             Slope = Average - _previousAverage;
 

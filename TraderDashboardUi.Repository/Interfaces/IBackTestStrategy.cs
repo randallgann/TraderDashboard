@@ -8,6 +8,6 @@ namespace TraderDashboardUi.Repository.Interfaces
 {
     public interface IBackTestStrategy
     {
-        DataTable ExecuteBackTest(DataTable dataTable);
+        DataTable ExecuteBackTest(DataTable dataTable, int decimalPlaces);
     }
 }
