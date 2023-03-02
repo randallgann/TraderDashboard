@@ -33,9 +33,13 @@ namespace TraderDashboardUi.Repository.Providers
             throw new NotImplementedException();
         }
 
-        public TradeBook BackTestExecuteTrades(DataTable dt)
+        public TradeBook BackTestExecuteTrades(DataTable dt, int decimalPlaces)
         {
-            int decimalPlaces = dt.Rows[0]["Close"].ToString().Split('.')[1].Length;
+            if (_tradeBook.Positions.Count != 0)
+            {
+                _tradeBook.Positions.Clear();
+            }
+
             var backTestSettingsList = GetSettingsCombinations();
 
             // convert pipcounts to pipvalues

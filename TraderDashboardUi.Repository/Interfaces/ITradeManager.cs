@@ -15,7 +15,7 @@ namespace TraderDashboardUi.Repository.Interfaces
         public decimal PipSlippageValue { get; set; }
         public int Units { get; set; }
 
-        public TradeBook BackTestExecuteTrades(DataTable dataTable);
+        public TradeBook BackTestExecuteTrades(DataTable dataTable, int decimalPlaces);
         public int ClosePosition();
         public int OpenPosition();
 

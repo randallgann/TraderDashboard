@@ -81,27 +81,9 @@ namespace TraderDashboardUi.Controllers
             DataTable backTestResults = _backTestStrategy.ExecuteBackTest(dt, decimalPlaces);
 
             // execute trades
-            TradeBook tradeResults = _tradeManager.BackTestExecuteTrades(backTestResults);
+            TradeBook tradeResults = _tradeManager.BackTestExecuteTrades(backTestResults, decimalPlaces);
 
             BackTestResponseViewModel backTestResponseViewModel = GetBackTestResponseViewModel(backTestResults, tradeResults, model.Strategy);
-
-            //foreach (DataRow row in dt.Rows)
-            //{
-            //    Candle c = new Candle();
-            //    c.Instrument = Convert.ToString(row["Instrument"]);
-            //    c.Granularity = Convert.ToString(row["Granularity"]);
-            //    c.Complete = Convert.ToString(row["Complete"]);
-            //    c.volume = Convert.ToString(row["Volume"]);
-            //    c.time = Convert.ToString(row["Time"]);
-            //    c.open = Convert.ToString(row["Open"]);
-            //    c.high = Convert.ToString(row["High"]);
-            //    c.low = Convert.ToString(row["Low"]);
-            //    c.close = Convert.ToString(row["Close"]);
-            //    backTestResponseViewModel.Candles.Add(c);
-
-            //}
-
-
 
             return await Task.FromResult(PartialView("_BackTestResponse", backTestResponseViewModel));
         }

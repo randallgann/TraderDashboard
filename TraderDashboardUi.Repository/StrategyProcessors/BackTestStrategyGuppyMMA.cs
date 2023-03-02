@@ -39,11 +39,11 @@ namespace TraderDashboardUi.Repository.StrategyProcessors
             //DataRow[] rows = dt.Select("Time = '" + "2023-02-01T09:06:00.000000000Z" + "'");
 
             // calculate indicators and populate datatable
-            var counter =  0;
+            //var counter =  0;
             foreach (DataRow dw in dt.Rows)
             {
-                Debug.WriteLine(dw["Time"]);
-                Debug.WriteLine(counter++);
+                //Debug.WriteLine(dw["Time"]);
+                //Debug.WriteLine(counter++);
                 _strategy.UpdateAllEMA(dw, decimalPlaces);
             }
 
