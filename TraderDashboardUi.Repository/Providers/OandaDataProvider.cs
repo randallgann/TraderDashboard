@@ -21,6 +21,7 @@ namespace TraderDashboardUi.Repository.Providers
         private readonly ILogger<OandaDataProvider> _logger;
         private RestClient _restClient;
         private readonly TraderDashboardConfigurations _traderDashboardConfigurations;
+        private Utilites _utilites;
 
         public OandaDataProvider(ILogger<OandaDataProvider> logger, RestClient restClient, TraderDashboardConfigurations traderDashboardConfigurations)
         {
@@ -167,7 +168,7 @@ namespace TraderDashboardUi.Repository.Providers
 
                 _logger.LogError(JsonConvert.SerializeObject(logErr));
 
-                return null;
+                throw;
             }
         }
     }

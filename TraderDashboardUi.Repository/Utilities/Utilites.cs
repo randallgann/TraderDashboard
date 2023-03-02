@@ -1,4 +1,6 @@
-﻿using RestSharp;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,6 +18,10 @@ namespace TraderDashboardUi.Repository.Utilities
         public static async Task<string> GetApiResponse(RestClient restClient, RestRequest request)
         {
             var response = await restClient.ExecuteAsync(request);
+            if (response.ErrorException != null)
+            {
+                throw new Exception(response.Content);
+            }
             return response.Content;
         }
         
