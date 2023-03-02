@@ -57,35 +57,44 @@ namespace TraderDashboardUi.Controllers
 
         private async Task<IActionResult> ProcessBackTest(BackTestViewModel model)
         {
-            // get the candles
-            var candles = await _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate);
-
-            // get the number of decimal places in the close value of the pair
-            int decimalPlaces = candles.candles[0].mid.c.ToString().Split(".")[1].Length;
-
-            // convert to datatable
-            DataTable dt = Utilites.ConvertOandaCandlesToDataTable(candles);
-
-            // get appropriate IBeckTestStrategy - StrategyProcessors
-            var strategyProcessor = GetStrategyProcessor(model.Strategy);
-            if (strategyProcessor == null)
+            try
             {
-                ModelState.AddModelError(string.Empty, "Strategy Processor is null");
-                // ToDo: fix return of error message
-                return View(model);
+                // get the candles
+                var candles = await _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate);
+
+                // get the number of decimal places in the close value of the pair
+                int decimalPlaces = candles.candles[0].mid.c.ToString().Split(".")[1].Length;
+
+                // convert to datatable
+                DataTable dt = Utilites.ConvertOandaCandlesToDataTable(candles);
+
+                // get appropriate IBeckTestStrategy - StrategyProcessors
+                var strategyProcessor = GetStrategyProcessor(model.Strategy);
+                if (strategyProcessor == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Strategy Processor is null");
+                    // ToDo: fix return of error message
+                    return View(model);
+                }
+                _backTestStrategy = strategyProcessor;
+
+
+                // execute backtest
+                DataTable backTestResults = _backTestStrategy.ExecuteBackTest(dt, decimalPlaces);
+
+                // execute trades
+                TradeBook tradeResults = _tradeManager.BackTestExecuteTrades(backTestResults, decimalPlaces);
+
+                BackTestResponseViewModel backTestResponseViewModel = GetBackTestResponseViewModel(backTestResults, tradeResults, model.Strategy);
+
+                return await Task.FromResult(PartialView("_BackTestResponse", backTestResponseViewModel));
             }
-            _backTestStrategy = strategyProcessor;
-
-
-            // execute backtest
-            DataTable backTestResults = _backTestStrategy.ExecuteBackTest(dt, decimalPlaces);
-
-            // execute trades
-            TradeBook tradeResults = _tradeManager.BackTestExecuteTrades(backTestResults, decimalPlaces);
-
-            BackTestResponseViewModel backTestResponseViewModel = GetBackTestResponseViewModel(backTestResults, tradeResults, model.Strategy);
-
-            return await Task.FromResult(PartialView("_BackTestResponse", backTestResponseViewModel));
+            catch (Exception ex)
+            {
+                BackTestResponseViewModel backTestResponseViewModel = new BackTestResponseViewModel();
+                backTestResponseViewModel.ErrorMessage.Add(ex.Message);
+                return await Task.FromResult(PartialView("_Error", backTestResponseViewModel));
+            }
         }
 
         private BackTestResponseViewModel GetBackTestResponseViewModel(DataTable backTestResults, TradeBook tradeResults, string strategy)
