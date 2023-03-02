@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using TraderDashboardUi.Entity.Indicators;
@@ -41,19 +42,25 @@ namespace TraderDashboardUi.Entity.Strategies
             LongTermEMA.Add(_60EMA = new EMA(60));
         }
 
-        public void UpdateAllEMA(DataRow dataRow)
+        public void UpdateAllEMA(DataRow dataRow, int decimalPlaces)
         {
             // remove the lists
             PropertyInfo[] emaProperties = typeof(GuppyMMA).GetProperties(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                                                             .Where(prop => prop.PropertyType == typeof(EMA))
                                                             .ToArray();
-
-            foreach (PropertyInfo emaProperty in emaProperties)
+            try
             {
-                var s = emaProperty.Name;
-                EMA ema = (EMA)emaProperty.GetValue(this);
-                ema.AddDataPoint(Convert.ToDecimal(dataRow["Close"]));
-                dataRow[emaProperty.Name] = ema.Average;
+                foreach (PropertyInfo emaProperty in emaProperties)
+                {
+                    var s = emaProperty.Name;
+                    EMA ema = (EMA)emaProperty.GetValue(this);
+                    ema.AddDataPoint(Convert.ToDecimal(dataRow["Close"]), decimalPlaces);
+                    dataRow[emaProperty.Name] = ema.Average;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
             }
 
             var signalResult = TestForSignal(dataRow);

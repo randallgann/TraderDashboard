@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Text;
 using TraderDashboardUi.Entity;
 using TraderDashboardUi.Entity.Strategies;
@@ -30,15 +31,20 @@ namespace TraderDashboardUi.Repository.StrategyProcessors
             throw new NotImplementedException();
         }
 
-        public DataTable ExecuteBackTest(DataTable dataTable)
+        public DataTable ExecuteBackTest(DataTable dataTable, int decimalPlaces)
         {
             // arrange datatable
             var dt = _strategy.ArrangeDataTable(dataTable);
 
+            //DataRow[] rows = dt.Select("Time = '" + "2023-02-01T09:06:00.000000000Z" + "'");
+
             // calculate indicators and populate datatable
+            var counter =  0;
             foreach (DataRow dw in dt.Rows)
             {
-                _strategy.UpdateAllEMA(dw);
+                Debug.WriteLine(dw["Time"]);
+                Debug.WriteLine(counter++);
+                _strategy.UpdateAllEMA(dw, decimalPlaces);
             }
 
             return dt;
