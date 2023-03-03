@@ -20,6 +20,8 @@ namespace TraderDashboardUi.Repository.Providers
 
         public int MaxActiveTrades { get; set; }
 
+        public int CandleCounter { get; set; } = 1;
+
         
 
         public TradeManager(BackTestSettings backTestSettings, TradeBook tradeBook)
@@ -52,11 +54,16 @@ namespace TraderDashboardUi.Repository.Providers
                 backTestSettings["PipTrailingStopLoss"] = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(backTestSettings["PipTrailingStopLoss"], decimalPlaces);
 
                 // initialize counter to start trading only after 60 candles have been calculated in order to get accurate values of for 60EMA
-                var counter = 1;
+                string startingTrend = null;
                 foreach (DataRow dr in dt.Rows)
                 {
-                    if (counter > 60)
+                    if (CandleCounter == 1)
                     {
+                        startingTrend = dr["DirectionofTrend"].ToString();
+                    }
+                    if (CandleCounter > 60 && startingTrend != dr["DirectionofTrend"].ToString())
+                    {
+                        CandleCounter++;
                         if (dr["Signal"].ToString() == "1" && _tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
                         {
                             Random rand = new Random();
@@ -96,6 +103,8 @@ namespace TraderDashboardUi.Repository.Providers
                         if (_tradeBook.Positions.Count > 0)
                         {
                             decimal currentPrice = Convert.ToDecimal(dr["Close"]);
+                            decimal highPrice = Convert.ToDecimal(dr["High"]);
+                            decimal lowPrice = Convert.ToDecimal(dr["Low"]);
                             foreach (var pos in _tradeBook.Positions)
                             {
                                 if (pos.BackTestActive)
@@ -145,7 +154,7 @@ namespace TraderDashboardUi.Repository.Providers
                     }
                     else
                     {
-                        counter++;
+                        CandleCounter++;
                     }
                 }
             }

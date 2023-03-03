@@ -100,6 +100,21 @@ namespace TraderDashboardUi.Repository.Utilities
                         rowDict["45EMA"] = row["_45EMA"];
                         rowDict["50EMA"] = row["_50EMA"];
                         rowDict["60EMA"] = row["_60EMA"];
+                        rowDict["3_5Delta"] = row["_3_5Delta"];
+                        rowDict["5_8Delta"] = row["_5_8Delta"];
+                        rowDict["8_10Delta"] = row["_8_10Delta"];
+                        rowDict["10_12Delta"] = row["_10_12Delta"];
+                        rowDict["12_15elta"] = row["_12_15Delta"];
+                        rowDict["15_30Delta"] = row["_15_30Delta"];
+                        rowDict["30_35Delta"] = row["_30_35Delta"];
+                        rowDict["35_40Delta"] = row["_35_40Delta"];
+                        rowDict["40_45Delta"] = row["_40_45Delta"];
+                        rowDict["45_50Delta"] = row["_45_50Delta"];
+                        rowDict["50_60Delta"] = row["_50_60Delta"];
+                        rowDict["3_60Delta"] = row["_3_60Delta"];
+                        rowDict["DirectionofTrend"] = row["DirectionofTrend"];
+                        rowDict["UpTrendCount"] = row["UpTrendCount"];
+                        rowDict["DownTrendCount"] = row["DownTrendCount"];
                         backTestResultsList.Add(rowDict);
                     }
                     return backTestResultsList;
