@@ -10,7 +10,7 @@ namespace TraderDashboardUi.Entity.Strategies
 {
     public class GuppyMMA
     {
-        private bool DirectionofTrend { get; set; }
+        private string DirectionofTrend { get; set; } = null;
         private int DownTrendCount { get; set; } = 0;
         private int UpTrendCount { get; set; } = 0;
         private bool HasCrossOverOccurred { get; set; } = false;
@@ -136,16 +136,19 @@ namespace TraderDashboardUi.Entity.Strategies
             {
                 DownTrendCount++;
                 UpTrendCount = 0;
-                DirectionofTrend = false;
+                DirectionofTrend = "DOWN";
                 return 1;
             }
             if (allGreater)
             {
                 UpTrendCount++;
                 DownTrendCount = 0;
-                DirectionofTrend = true;
+                DirectionofTrend = "UP";
                 return 2;
             }
+            DirectionofTrend = "NONE";
+            DownTrendCount = 0;
+            UpTrendCount = 0;
             return 0;
         }
 
