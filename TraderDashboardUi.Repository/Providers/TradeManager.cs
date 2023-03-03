@@ -96,6 +96,8 @@ namespace TraderDashboardUi.Repository.Providers
                         if (_tradeBook.Positions.Count > 0)
                         {
                             decimal currentPrice = Convert.ToDecimal(dr["Close"]);
+                            decimal highPrice = Convert.ToDecimal(dr["High"]);
+                            decimal lowPrice = Convert.ToDecimal(dr["Low"]);
                             foreach (var pos in _tradeBook.Positions)
                             {
                                 if (pos.BackTestActive)

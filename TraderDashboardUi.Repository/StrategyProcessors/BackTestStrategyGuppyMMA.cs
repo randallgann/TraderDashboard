@@ -50,7 +50,7 @@ namespace TraderDashboardUi.Repository.StrategyProcessors
             return dt;
         }
 
-        public bool ExecuteTrade()
+        public bool ExecuteBackTestTrades()
         {
             throw new NotImplementedException();
         }
