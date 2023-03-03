@@ -51,92 +51,101 @@ namespace TraderDashboardUi.Repository.Providers
                 backTestSettings["PipSlippageValue"] = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(backTestSettings["PipSlippageValue"], decimalPlaces);
                 backTestSettings["PipTrailingStopLoss"] = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(backTestSettings["PipTrailingStopLoss"], decimalPlaces);
 
+                // initialize counter to start trading only after 60 candles have been calculated in order to get accurate values of for 60EMA
+                var counter = 1;
                 foreach (DataRow dr in dt.Rows)
                 {
-                    if (dr["Signal"].ToString() == "1" && _tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
+                    if (counter > 60)
                     {
-                        Random rand = new Random();
-                        
-                        var trade = new Position
+                        if (dr["Signal"].ToString() == "1" && _tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
                         {
-                            TransactionId = rand.Next(100, 1000).ToString(),
-                            Time = Convert.ToDateTime(dr["Time"]),
-                            Instrument = dr["Instrument"].ToString(),
-                            Price = Convert.ToDecimal(dr["Close"]),
-                            BackTestActive = true,
-                            BackTestPipStopLoss = Math.Round(Convert.ToDecimal(dr["Close"]) + backTestSettings["PipStopLoss"], decimalPlaces),
-                            BackTestPipTakeProfit = Math.Round(Convert.ToDecimal(dr["Close"]) - backTestSettings["PipTakeProfit"], decimalPlaces),
-                            BackTestBuySell = "Sell"
-                        };
+                            Random rand = new Random();
 
-                        _tradeBook.Positions.Add(trade);
-                    }
-                    else if (dr["Signal"].ToString() == "2" && _tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
-                    {
-                        Random rand = new Random();
-                        var trade = new Position
-                        {
-                            TransactionId = rand.Next(100, 1000).ToString(),
-                            Time = Convert.ToDateTime(dr["Time"]),
-                            Instrument = dr["Instrument"].ToString(),
-                            Price = Convert.ToDecimal(dr["Close"]),
-                            BackTestActive = true,
-                            BackTestPipStopLoss = Math.Round(Convert.ToDecimal(dr["Close"]) - backTestSettings["PipStopLoss"], decimalPlaces),
-                            BackTestPipTakeProfit = Math.Round(Convert.ToDecimal(dr["Close"]) + backTestSettings["PipTakeProfit"], decimalPlaces),
-                            BackTestBuySell = "Buy"
-                        };
-
-                        _tradeBook.Positions.Add(trade);
-                    }
-
-                    if (_tradeBook.Positions.Count > 0)
-                    {
-                        decimal currentPrice = Convert.ToDecimal(dr["Close"]);
-                        foreach (var pos in _tradeBook.Positions)
-                        {
-                            if (pos.BackTestActive)
+                            var trade = new Position
                             {
-                                if (pos.BackTestBuySell == "Buy")
-                                {
-                                    if (currentPrice <= pos.BackTestPipStopLoss)
-                                    {
-                                        pos.BackTestActive = false;
-                                        pos.BackTestClosePositionPrice = pos.BackTestPipStopLoss;
-                                        pos.BackTestClosePositionPL = Math.Round(pos.BackTestPipStopLoss - pos.Price, decimalPlaces);
-                                        pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
-                                        pos.BackTestWinLoss = false;
-                                    }
-                                    else if (currentPrice >= pos.BackTestPipTakeProfit)
-                                    {
-                                        pos.BackTestActive = false;
-                                        pos.BackTestClosePositionPrice = pos.BackTestPipTakeProfit;
-                                        pos.BackTestClosePositionPL = Math.Round(pos.BackTestPipTakeProfit - pos.Price, decimalPlaces);
-                                        pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
-                                        pos.BackTestWinLoss = true;
-                                    }
-                                }
+                                TransactionId = rand.Next(100, 1000).ToString(),
+                                Time = (dr["Time"]).ToString(),
+                                Instrument = dr["Instrument"].ToString(),
+                                Price = Convert.ToDecimal(dr["Close"]),
+                                BackTestActive = true,
+                                BackTestPipStopLoss = Math.Round(Convert.ToDecimal(dr["Close"]) + backTestSettings["PipStopLoss"], decimalPlaces),
+                                BackTestPipTakeProfit = Math.Round(Convert.ToDecimal(dr["Close"]) - backTestSettings["PipTakeProfit"], decimalPlaces),
+                                BackTestBuySell = "Sell"
+                            };
 
-                                if (pos.BackTestBuySell == "Sell")
+                            _tradeBook.Positions.Add(trade);
+                        }
+                        else if (dr["Signal"].ToString() == "2" && _tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
+                        {
+                            Random rand = new Random();
+                            var trade = new Position
+                            {
+                                TransactionId = rand.Next(100, 1000).ToString(),
+                                Time = (dr["Time"]).ToString(),
+                                Instrument = dr["Instrument"].ToString(),
+                                Price = Convert.ToDecimal(dr["Close"]),
+                                BackTestActive = true,
+                                BackTestPipStopLoss = Math.Round(Convert.ToDecimal(dr["Close"]) - backTestSettings["PipStopLoss"], decimalPlaces),
+                                BackTestPipTakeProfit = Math.Round(Convert.ToDecimal(dr["Close"]) + backTestSettings["PipTakeProfit"], decimalPlaces),
+                                BackTestBuySell = "Buy"
+                            };
+
+                            _tradeBook.Positions.Add(trade);
+                        }
+
+                        if (_tradeBook.Positions.Count > 0)
+                        {
+                            decimal currentPrice = Convert.ToDecimal(dr["Close"]);
+                            foreach (var pos in _tradeBook.Positions)
+                            {
+                                if (pos.BackTestActive)
                                 {
-                                    if (currentPrice >= pos.BackTestPipStopLoss)
+                                    if (pos.BackTestBuySell == "Buy")
                                     {
-                                        pos.BackTestActive = false;
-                                        pos.BackTestClosePositionPrice = pos.BackTestPipStopLoss;
-                                        pos.BackTestClosePositionPL = Math.Round(pos.Price - pos.BackTestPipStopLoss, decimalPlaces);
-                                        pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
-                                        pos.BackTestWinLoss = false;
+                                        if (currentPrice <= pos.BackTestPipStopLoss)
+                                        {
+                                            pos.BackTestActive = false;
+                                            pos.BackTestClosePositionPrice = pos.BackTestPipStopLoss;
+                                            pos.BackTestClosePositionPL = Math.Round(pos.BackTestPipStopLoss - pos.Price, decimalPlaces);
+                                            pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
+                                            pos.BackTestWinLoss = false;
+                                        }
+                                        else if (currentPrice >= pos.BackTestPipTakeProfit)
+                                        {
+                                            pos.BackTestActive = false;
+                                            pos.BackTestClosePositionPrice = pos.BackTestPipTakeProfit;
+                                            pos.BackTestClosePositionPL = Math.Round(pos.BackTestPipTakeProfit - pos.Price, decimalPlaces);
+                                            pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
+                                            pos.BackTestWinLoss = true;
+                                        }
                                     }
-                                    else if (currentPrice <= pos.BackTestPipTakeProfit)
+
+                                    if (pos.BackTestBuySell == "Sell")
                                     {
-                                        pos.BackTestActive = false;
-                                        pos.BackTestClosePositionPrice = pos.BackTestPipTakeProfit;
-                                        pos.BackTestClosePositionPL = Math.Round(pos.Price - pos.BackTestPipTakeProfit, decimalPlaces);
-                                        pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
-                                        pos.BackTestWinLoss = true;
+                                        if (currentPrice >= pos.BackTestPipStopLoss)
+                                        {
+                                            pos.BackTestActive = false;
+                                            pos.BackTestClosePositionPrice = pos.BackTestPipStopLoss;
+                                            pos.BackTestClosePositionPL = Math.Round(pos.Price - pos.BackTestPipStopLoss, decimalPlaces);
+                                            pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
+                                            pos.BackTestWinLoss = false;
+                                        }
+                                        else if (currentPrice <= pos.BackTestPipTakeProfit)
+                                        {
+                                            pos.BackTestActive = false;
+                                            pos.BackTestClosePositionPrice = pos.BackTestPipTakeProfit;
+                                            pos.BackTestClosePositionPL = Math.Round(pos.Price - pos.BackTestPipTakeProfit, decimalPlaces);
+                                            pos.BackTestClosePositionPL = GetPLValueBasedOnDecimalPlacesInCurrencyPair(pos.BackTestClosePositionPL, decimalPlaces);
+                                            pos.BackTestWinLoss = true;
+                                        }
                                     }
                                 }
                             }
                         }
+                    }
+                    else
+                    {
+                        counter++;
                     }
                 }
             }

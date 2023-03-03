@@ -45,6 +45,8 @@ namespace TraderDashboardUi.Repository.Utilities
             foreach (OCandle candle in ocandles.candles)
             {
                 DataRow dr = dt.NewRow();
+
+                // update the time to CST
                 dr["Instrument"] = ocandles.instrument;
                 dr["Granularity"] = ocandles.granularity;
                 dr["Complete"] = candle.complete;
@@ -60,6 +62,15 @@ namespace TraderDashboardUi.Repository.Utilities
             return dt;
         }
 
+        private static object UpdateTime(string time)
+        {
+            DateTime utcTime = DateTime.Parse(time);
+            utcTime = new DateTime(utcTime.Year, utcTime.Month, utcTime.Day, utcTime.Hour, utcTime.Minute, 0); // Remove seconds
+            string utcTimeString = utcTime.ToString("yyyy-MM-ddTHH:mm:ss"); // Convert to string in CST format without time zone indicator
+            //object formattedTimeString = new { Time = cstTimeString };
+            return utcTimeString;
+        }
+
         public static List<Dictionary<string, object>> ConvertBackTestResultsToDictionary(DataTable backTestResults, string strategy)
         {
             List<Dictionary<string, object>> backTestResultsList = new List<Dictionary<string, object>>();
@@ -72,7 +83,23 @@ namespace TraderDashboardUi.Repository.Utilities
                         rowDict["Time"] = row["Time"];
                         rowDict["Instrument"] = row["Instrument"];
                         rowDict["Granulatiry"] = row["Granularity"];
+                        rowDict["Volume"] = row["Volume"];
+                        rowDict["Open"] = row["Open"];
+                        rowDict["High"] = row["High"];
+                        rowDict["Low"] = row["Low"];
+                        rowDict["Close"] = row["Close"];
                         rowDict["3EMA"] = row["_3EMA"];
+                        rowDict["5EMA"] = row["_5EMA"];
+                        rowDict["8EMA"] = row["_8EMA"];
+                        rowDict["10EMA"] = row["_10EMA"];
+                        rowDict["12EMA"] = row["_12EMA"];
+                        rowDict["15EMA"] = row["_15EMA"];
+                        rowDict["30EMA"] = row["_30EMA"];
+                        rowDict["35EMA"] = row["_35EMA"];
+                        rowDict["40EMA"] = row["_40EMA"];
+                        rowDict["45EMA"] = row["_45EMA"];
+                        rowDict["50EMA"] = row["_50EMA"];
+                        rowDict["60EMA"] = row["_60EMA"];
                         backTestResultsList.Add(rowDict);
                     }
                     return backTestResultsList;

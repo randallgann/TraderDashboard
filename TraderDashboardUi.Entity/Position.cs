@@ -7,7 +7,7 @@ namespace TraderDashboardUi.Entity
     public class Position
     {
         public string TransactionId { get; set; }
-        public DateTime Time { get; set; }
+        public string Time { get; set; }
 
         public string Type { get; set; }
 
