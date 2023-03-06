@@ -30,7 +30,7 @@ namespace TraderDashboardUi.Repository.Providers
             _traderDashboardConfigurations = traderDashboardConfigurations;
         }
 
-        public async Task<OandaAccount> GetOandaAccount()
+        public async Task<OandaAccount> GetOandaAccount(string accountType)
         {
             var logInfo = new
             {
@@ -49,7 +49,15 @@ namespace TraderDashboardUi.Repository.Providers
                 var endPoint = oandaSettings.Endpoints.FirstOrDefault(x => x.Key == "account").Value;
                 var oandaAccountResponse = new OandaAccountResponse();
 
-                _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+                if (accountType == "live")
+                {
+                    _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+                }
+                else if (accountType == "practice")
+                {
+                    _restClient.Options.BaseUrl = new Uri(oandaSettings.PracticeBaseUrl);
+                }
+
 
                 var logOandaSettingsInfo = new
                 {

@@ -10,7 +10,7 @@ namespace TraderDashboardUi.Repository.Interfaces
 {
     public interface IOandaDataProvider
     {
-        Task<OandaAccount> GetOandaAccount();
+        Task<OandaAccount> GetOandaAccount(string accountType);
         Task<OandaCandles> GetOandaCandles(string instrument, DateTime backTestStartDate, DateTime backTestEndDate);
     }
 }

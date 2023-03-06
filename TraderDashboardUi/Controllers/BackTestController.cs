@@ -123,8 +123,8 @@ namespace TraderDashboardUi.Controllers
         {
             var model = new BackTestModel
             {
-                Instruments = GetBackTestInstruments(),
-                Strategies = GetBackTestStrategies(),
+                Instruments = Utilites.GetBackTestInstruments(),
+                Strategies = Utilites.GetBackTestStrategies(),
             };
 
             return model;

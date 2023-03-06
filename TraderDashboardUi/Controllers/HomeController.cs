@@ -47,14 +47,17 @@ namespace TraderDashboardUi.Controllers
 
         private HomeAccountsViewModel GetInitialModel()
         {
-            OandaAccount response = _provider.GetOandaAccount().Result;
+            OandaAccount liveAccountResponse = _provider.GetOandaAccount("live").Result;
+            OandaAccount practiceAccountResponse = _provider.GetOandaAccount("live").Result;
 
             var model = new HomeAccountsViewModel();
-            model.oanda = response;
+            model.LiveAccountOanda = liveAccountResponse;
+            model.PracticeAccountOanda = practiceAccountResponse;
 
             return new HomeAccountsViewModel
             {
-                oanda = response
+                LiveAccountOanda = liveAccountResponse,
+                PracticeAccountOanda = practiceAccountResponse
             };
 
         }
