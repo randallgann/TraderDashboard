@@ -32,7 +32,6 @@ $(function () {
 });
 
 var table = new Tabulator("#tabulator_table", {});
-console.log("Inside script");
 
 $(document).ready(function () {
     // Bind an event handler to the form's submit event

@@ -1,15 +1,28 @@
 ﻿@model PracticeTradeViewModel
 
-
-<div class="card border-0 box-shadow">
-    <div class="card-body padding-0">
-        <div class="container-fluid">
-            <h2>Oanda Practice Account Info:</h2>
-            <br />
-            <p>IsRunning: @Model.isRunning</p>
-            <br />
-            <p>ElapsedTime: $@Model.elapsedTime</p>
-        </div>
-    </div>
+<div class="container-fluid">
+    <h2>Oanda Practice Account Info:</h2>
+    <br />
+    <p>IsRunning: @Model.isRunning</p>
+    <br />
+    <p>Instrument: @Model.Instrument</p>
+    <br />
+    <p>Strategy: @Model.Strategy</p>
+    <br />
+    <span id="elapsedTime"></span>
 </div>
 
+<input type="hidden" id="getElapsedTimeUrl" value="@Url.Action("GetElapsedTime", "PracticeTrade")" />
+<input type="hidden" id="stopPracticeTradeUrl" value="@Url.Action("StopRunningPracticeTrade", "PracticeTrade")" />
+
+@*<script>
+    setInterval(function() {
+        $.ajax({
+            url: "@Url.Action("GetElapsedTime", "PracticeTrade")",
+            type: "GET",
+            success: function(data) {
+                $("#elapsedTime").text(data);
+            }
+        });
+    }, 1000);
+</script>*@

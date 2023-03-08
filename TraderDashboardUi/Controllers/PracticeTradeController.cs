@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Web.Mvc;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using TraderDashboardUi.Models;
@@ -17,13 +19,17 @@ namespace TraderDashboardUi.Controllers
         private IBackTestStrategy _backTestStrategy;
         private readonly TraderDashboardConfigurations _traderDashboardConfigurations;
         private readonly ITradeManager _tradeManager;
+        private PracticeTradeViewModel _practiceTradeViewModel;
+        private CancellationTokenSource _cancellationTokenSource;
 
-        public PracticeTradeController(ILogger<PracticeTradeController> logger, IOandaDataProvider provider, TraderDashboardConfigurations configurations, ITradeManager tradeManager)
+        public PracticeTradeController(ILogger<PracticeTradeController> logger, IOandaDataProvider provider, TraderDashboardConfigurations configurations, ITradeManager tradeManager, PracticeTradeViewModel practiceTradeViewModel)
         {
             _logger = logger;
             _provider = provider;
             _traderDashboardConfigurations = configurations;
             _tradeManager = tradeManager;
+            _practiceTradeViewModel = practiceTradeViewModel;
+            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         [HttpGet]
@@ -41,7 +47,9 @@ namespace TraderDashboardUi.Controllers
             // add error handling for when candles count is too large
             try
             {
-                return await StartPracticeTrading(model);
+                _practiceTradeViewModel.Instrument = model.Instrument;
+                _practiceTradeViewModel.Strategy = model.Strategy;
+                return await StartPracticeTrading(_practiceTradeViewModel);
             }
             catch (Exception ex)
             {
@@ -51,20 +59,48 @@ namespace TraderDashboardUi.Controllers
             }
         }
 
+        [HttpGet]
+        public JsonResult GetElapsedTime()
+        {
+            //var eTime = _practiceTradeViewModel.elapsedTime;
+            return Json(_practiceTradeViewModel.elapsedTime);
+        }
+
         private async Task<IActionResult> StartPracticeTrading(PracticeTradeViewModel model)
         {
+
+            model.elapsedTime = 0;
             model.isRunning = true;
 
-            new Thread(() => {
-                while (model.isRunning)
-                {
-                    model.elapsedTime++;
-                }
-            }).Start();
+            var cancellationToken = _cancellationTokenSource.Token;
 
-            PracticeTradeViewModel practiceTradeViewModel = new PracticeTradeViewModel();
+            // start the loop on a separate thread
+            Task.Run(() => UpdateElapsedTime(model, cancellationToken), cancellationToken);
 
-            return await Task.FromResult(PartialView("_PracticeTradeRunning", practiceTradeViewModel));
+            return await Task.FromResult(PartialView("_PracticeTradeRunning", model));
+        }
+
+        [AjaxOnly]
+        [HttpPost]
+        public ActionResult StopRunningPracticeTrade()
+        {
+            _cancellationTokenSource.Cancel();
+            Debug.Write("Thread has been cancelled");
+            _practiceTradeViewModel.elapsedTime = 0;
+            _practiceTradeViewModel.isRunning = false;
+            return Content("Stopped running practice tests");
+
+        }
+
+
+        private void UpdateElapsedTime(PracticeTradeViewModel practiceTradeViewModel, CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                practiceTradeViewModel.elapsedTime++;
+                Debug.WriteLine($"Elapsed time: {practiceTradeViewModel.elapsedTime}");
+                Thread.Sleep(1000);
+            };
         }
 
         private PracticeTradeModel GetInitialModel()
@@ -79,3 +115,14 @@ namespace TraderDashboardUi.Controllers
         }
     }
 }
+
+
+//new Thread(() =>
+//{
+//    while (model.isRunning)
+//    {
+//        Debug.WriteLine(model.elapsedTime);
+//        model.elapsedTime++;
+//        Thread.Sleep(1000);
+//    }
+//}).Start();
