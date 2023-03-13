@@ -57,7 +57,10 @@ $(document).ready(function () {
         event.preventDefault();
 
         $("#start-button").prop('disabled', true);
+        $("#stop-button").prop('disabled', false);
         console.log("Start Button Has Been Disabled");
+
+
 
         // Get the form data
         var form = $(this);
@@ -84,10 +87,13 @@ $(document).ready(function () {
     $("#stop-button").click(function () {
 
         $("#start-button").prop('disabled', false);
-
+        $("#stop-button").prop('disabled', true);
+        console.log("Inside stop button function.  Start button should be enabled");
+        var viewModelData = document.getElementById("viewmodel-data").value;
         $.ajax({
             url: "/PracticeTrade/StopRunningPracticeTrade",
             type: "POST",
+            data: viewModelData,
             success: function (result) {
                 $("#practicetrade-response").html(result);
             },
@@ -129,83 +135,4 @@ function checkForUrl() {
 $(document).ready(function () {
     checkForUrl();
 });
-
-//$(document).ready(function () {
-
-//        // Get the URL of the GetElapsedTime action
-//        var getElapsedTimeUrl = $("#getElapsedTimeUrl").val();
-
-//        // Start the interval function
-//        setInterval(function () {
-//            $.ajax({
-//                url: getElapsedTimeUrl,
-//                type: "GET",
-//                dataType: "json",
-//                success: function (data) {
-//                    $("#elapsedTime").text(data);
-//                    console.log("Inside the interval function");
-//                }
-//            });
-//        }, 1000);  
-//});
-
-//$(document).ready(function () {
-//    setInterval(function () {
-//        $.get("/PracticeTrade/GetElapsedTime", { model: @Html.Raw(Json.Serialize(Model))
-//    }, function (data) {
-//        $("#elapsedTime").text(data.elapsedTime);
-//    });
-//}, 1000);
-//});
-
-//// This function makes an AJAX request to the server to get the updated timer value.
-//function GetTimerValueFromServer() {
-//    // Create a new XMLHttpRequest object to make the AJAX request.
-//    var xhr = new XMLHttpRequest();
-
-//    // Set the URL for the AJAX request.
-//    xhr.open("GET", "/PracticeTrade/GetTimerValue", true);
-
-//    // Set the callback function to be executed when the AJAX request is complete.
-//    xhr.onreadystatechange = function () {
-//        // Check if the AJAX request is complete and the server has returned a response.
-//        if (xhr.readyState === 4 && xhr.status === 200) {
-//            // Parse the JSON response to get the elapsed time value.
-//            var timerValue = JSON.parse(xhr.responseText).elapsedTime;
-
-//            // Update the timer label on the page with the updated value.
-//            UpdateTimerLabelOnPage(timerValue);
-//        }
-//    };
-
-//    // Send the AJAX request to the server.
-//    xhr.send();
-//}
-
-//$(document).ready(function () {
-//    // Bind an event handler to the form's submit event
-//    $("#practicetrade-form").submit(function (event) {
-//        // Stop the form from submitting normally
-//        event.preventDefault();
-
-//        // Get the form data
-//        var form = $(this);
-//        var data = form.serialize();
-
-//        // Send the Ajax Request
-//        $.ajax({
-//            type: form.attr('method'),
-//            url: form.attr('action'),
-//            data: data,
-//            success: function (result) {
-//                // Update the backtest-response div with the response
-//                $("#backtest-response").html(result);
-//            },
-//            error: function (xhr, status, error) {
-//                // Handle any errors
-//                console.log("Error:", error)
-//            }
-//        });
-//    });
-//});
 

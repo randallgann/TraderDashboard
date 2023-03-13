@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using TraderDashboardUi.Models;
 using TraderDashboardUi.Repository.Interfaces;
+using TraderDashboardUi.Repository.Providers;
 using TraderDashboardUi.Repository.Utilities;
 
 namespace TraderDashboardUi.Controllers
@@ -19,17 +21,15 @@ namespace TraderDashboardUi.Controllers
         private IBackTestStrategy _backTestStrategy;
         private readonly TraderDashboardConfigurations _traderDashboardConfigurations;
         private readonly ITradeManager _tradeManager;
-        private PracticeTradeViewModel _practiceTradeViewModel;
-        private CancellationTokenSource _cancellationTokenSource;
+        private static PracticeTradeThreadRunner _practiceTradeThreadRunner;
 
-        public PracticeTradeController(ILogger<PracticeTradeController> logger, IOandaDataProvider provider, TraderDashboardConfigurations configurations, ITradeManager tradeManager, PracticeTradeViewModel practiceTradeViewModel)
+        public PracticeTradeController(ILogger<PracticeTradeController> logger, IOandaDataProvider provider, TraderDashboardConfigurations configurations, ITradeManager tradeManager)
         {
             _logger = logger;
             _provider = provider;
             _traderDashboardConfigurations = configurations;
             _tradeManager = tradeManager;
-            _practiceTradeViewModel = practiceTradeViewModel;
-            _cancellationTokenSource = new CancellationTokenSource();
+
         }
 
         [HttpGet]
@@ -47,9 +47,7 @@ namespace TraderDashboardUi.Controllers
             // add error handling for when candles count is too large
             try
             {
-                _practiceTradeViewModel.Instrument = model.Instrument;
-                _practiceTradeViewModel.Strategy = model.Strategy;
-                return await StartPracticeTrading(_practiceTradeViewModel);
+                return await StartPracticeTrading(model);
             }
             catch (Exception ex)
             {
@@ -62,45 +60,36 @@ namespace TraderDashboardUi.Controllers
         [HttpGet]
         public JsonResult GetElapsedTime()
         {
-            //var eTime = _practiceTradeViewModel.elapsedTime;
-            return Json(_practiceTradeViewModel.elapsedTime);
+            if (_practiceTradeThreadRunner != null)
+            {
+                return Json(_practiceTradeThreadRunner._elapsedTime);
+            }
+            else
+            {
+                return Json("Unable to access elapsedTime");
+            }
         }
 
-        private async Task<IActionResult> StartPracticeTrading(PracticeTradeViewModel model)
+        public async Task<IActionResult> StartPracticeTrading(PracticeTradeViewModel model)
         {
+            Debug.WriteLine("StartPracticeTrading has been entered");
 
-            model.elapsedTime = 0;
-            model.isRunning = true;
-
-            var cancellationToken = _cancellationTokenSource.Token;
-
-            // start the loop on a separate thread
-            Task.Run(() => UpdateElapsedTime(model, cancellationToken), cancellationToken);
+            _practiceTradeThreadRunner = new PracticeTradeThreadRunner();
+            _practiceTradeThreadRunner._isRunning = true;
+            model.isRunning = _practiceTradeThreadRunner._isRunning;
 
             return await Task.FromResult(PartialView("_PracticeTradeRunning", model));
         }
 
         [AjaxOnly]
         [HttpPost]
-        public ActionResult StopRunningPracticeTrade()
+        public async Task<IActionResult> StopRunningPracticeTrade(PracticeTradeViewModel model)
         {
-            _cancellationTokenSource.Cancel();
-            Debug.Write("Thread has been cancelled");
-            _practiceTradeViewModel.elapsedTime = 0;
-            _practiceTradeViewModel.isRunning = false;
-            return Content("Stopped running practice tests");
+            _practiceTradeThreadRunner.Dispose();
+            model.isRunning = false;
+            model.elapsedTime = 0;
+            return await Task.FromResult(PartialView("_PracticeTradeRunning", model));
 
-        }
-
-
-        private void UpdateElapsedTime(PracticeTradeViewModel practiceTradeViewModel, CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                practiceTradeViewModel.elapsedTime++;
-                Debug.WriteLine($"Elapsed time: {practiceTradeViewModel.elapsedTime}");
-                Thread.Sleep(1000);
-            };
         }
 
         private PracticeTradeModel GetInitialModel()
@@ -115,14 +104,3 @@ namespace TraderDashboardUi.Controllers
         }
     }
 }
-
-
-//new Thread(() =>
-//{
-//    while (model.isRunning)
-//    {
-//        Debug.WriteLine(model.elapsedTime);
-//        model.elapsedTime++;
-//        Thread.Sleep(1000);
-//    }
-//}).Start();

@@ -64,11 +64,11 @@ namespace TraderDashboardUi
 
             var tradeBook = new TradeBook();
             var practiceTradeViewModel = new PracticeTradeViewModel();
+            var practiceTradeThreadRunner = new PracticeTradeThreadRunner();
 
             services.AddSingleton(traderDashboardConfigurations);
             services.AddSingleton(backTestSettings);
             services.AddSingleton(tradeBook);
-            services.AddSingleton(practiceTradeViewModel);
             services.AddTransient<RestClient>();
             services.AddScoped<IOandaDataProvider, OandaDataProvider>();
             services.AddScoped<ITradeManager, TradeManager>();

@@ -9,20 +9,9 @@
     <br />
     <p>Strategy: @Model.Strategy</p>
     <br />
-    <span id="elapsedTime"></span>
+    <p>ElapsedTime: <span id="elapsedTime"></span></p>
 </div>
 
 <input type="hidden" id="getElapsedTimeUrl" value="@Url.Action("GetElapsedTime", "PracticeTrade")" />
 <input type="hidden" id="stopPracticeTradeUrl" value="@Url.Action("StopRunningPracticeTrade", "PracticeTrade")" />
-
-@*<script>
-    setInterval(function() {
-        $.ajax({
-            url: "@Url.Action("GetElapsedTime", "PracticeTrade")",
-            type: "GET",
-            success: function(data) {
-                $("#elapsedTime").text(data);
-            }
-        });
-    }, 1000);
-</script>*@
+<input type="hidden" id="viewmodel-data" value="@Html.Raw(Json.Serialize(Model))">
