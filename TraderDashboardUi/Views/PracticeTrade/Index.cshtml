@@ -1,0 +1,45 @@
+﻿@model PracticeTradeModel
+
+@{
+    ViewData["Title"] = "PracticeTrade";
+}
+
+<div class="container-fluid alert-danger alert-dismissible">
+    <div asp-validation-summary="All"></div>
+</div>
+
+<div class="card border-0 box-shadow">
+    <div class="card-body">
+        <div class="card border-0 recovery-header">
+            <h4 class="mb-0 pl-2">Practice Trade</h4>
+        </div>
+
+        <form id="practicetrade-form" asp-action="Index" asp-controller="PracticeTrade"
+            data-ajax="true"
+            data-ajax-method="POST"
+            data-ajax-mode="replace"
+            data-ajax-update="#practicetrade-response"
+            data-ajax-failure="globalDataError"
+            data-ajax-begin="resetResultView">
+
+            @await Html.PartialAsync("_PracticeTradeRequest", Model)
+        </form>
+    </div>
+</div>
+
+<br />
+<br />
+
+<div class="card border-0 box-shadow">
+    <div class="card-body padding-0">
+        <div id="practicetrade-response"></div>
+        <div class="container-fluid">&nbsp;</div>
+    </div>
+</div>
+
+<div class="loadingModal" id="loader"></div>
+
+@section Scripts
+{
+    <script src="~/js/practicetrade.js"></script>
+}

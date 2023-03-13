@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TraderDashboardUi.Entity;
+using TraderDashboardUi.Models;
 using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.Providers;
 using TraderDashboardUi.Repository.Utilities;
@@ -62,6 +63,8 @@ namespace TraderDashboardUi
             };
 
             var tradeBook = new TradeBook();
+            var practiceTradeViewModel = new PracticeTradeViewModel();
+            var practiceTradeThreadRunner = new PracticeTradeThreadRunner();
 
             services.AddSingleton(traderDashboardConfigurations);
             services.AddSingleton(backTestSettings);

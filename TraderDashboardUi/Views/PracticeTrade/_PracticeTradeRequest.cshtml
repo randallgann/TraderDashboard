@@ -1,0 +1,24 @@
+﻿@model PracticeTradeModel
+
+<div class="form-row">
+    <div class="form-group col-md-6">
+        <label asp-for="Instrument">Select Instrument</label>
+        <select asp-for="Instrument" asp-items="Model.Instruments" class="form-control selectable"></select>
+        <span asp-validation-for="Instrument" class="text-danger"></span>
+    </div>
+
+    <div class="form-group col-md-6">
+        <label asp-for="Strategies">Select Strategy</label>
+        <select asp-for="Strategy" asp-items="Model.Strategies" class="form-control selectable"></select>
+        <span asp-validation-for="Strategies" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6">
+        <button id="start-button" type="submit" class="btn btn-primary btn-lg box-shadow pl-5 pr-5">Start</button>
+    </div>
+    <div class="col-sm-6">
+        <button id="stop-button" type="button" class="btn btn-primary btn-lg box-shadow pl-5 pr-5" disabled>Stop</button>
+    </div>
+</div>

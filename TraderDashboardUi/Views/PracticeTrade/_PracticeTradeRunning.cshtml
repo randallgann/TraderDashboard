@@ -1,0 +1,17 @@
+﻿@model PracticeTradeViewModel
+
+<div class="container-fluid">
+    <h2>Oanda Practice Account Info:</h2>
+    <br />
+    <p>IsRunning: @Model.isRunning</p>
+    <br />
+    <p>Instrument: @Model.Instrument</p>
+    <br />
+    <p>Strategy: @Model.Strategy</p>
+    <br />
+    <p>ElapsedTime: <span id="elapsedTime"></span></p>
+</div>
+
+<input type="hidden" id="getElapsedTimeUrl" value="@Url.Action("GetElapsedTime", "PracticeTrade")" />
+<input type="hidden" id="stopPracticeTradeUrl" value="@Url.Action("StopRunningPracticeTrade", "PracticeTrade")" />
+<input type="hidden" id="viewmodel-data" value="@Html.Raw(Json.Serialize(Model))">

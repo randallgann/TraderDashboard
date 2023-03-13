@@ -4,6 +4,8 @@ namespace TraderDashboardUi.Models
 {
     public class HomeAccountsViewModel
     {
-        public OandaAccount oanda { get; set; }
+        public OandaAccount LiveAccountOanda { get; set; }
+
+        public OandaAccount PracticeAccountOanda { get; set; }
     }
 }
