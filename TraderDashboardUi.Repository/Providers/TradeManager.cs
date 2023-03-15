@@ -22,7 +22,10 @@ namespace TraderDashboardUi.Repository.Providers
 
         public int CandleCounter { get; set; } = 1;
 
-        
+        public TradeManager()
+        {
+            _tradeBook = new TradeBook();
+        }
 
         public TradeManager(BackTestSettings backTestSettings, TradeBook tradeBook)
         {

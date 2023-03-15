@@ -48,6 +48,9 @@ namespace TraderDashboardUi
             var backTestRegistrySettings = new BackTestRegistrySettings();
             _configuration.GetSection("BackTestSettings").Bind(backTestRegistrySettings);
 
+            var practiceTradeRegistrySettings = new PracticeTradeRegistrySettings();
+            _configuration.GetSection("PracticeTradeSettings").Bind(practiceTradeRegistrySettings);
+
             var traderDashboardConfigurations = new TraderDashboardConfigurations
             {
                 oandaSettings = apiServiceRegistrySettings.Oanda
@@ -62,15 +65,23 @@ namespace TraderDashboardUi
                 MaxActiveTrades = backTestRegistrySettings.MaxActiveTrades.Select(s => decimal.Parse(s)).ToArray()
             };
 
+            var practiceTradeSettings = new PracticeTradeSettings()
+            {
+                PipStopLoss = backTestRegistrySettings.PipStopLoss.Select(s => decimal.Parse(s)).ToArray(),
+                PipTakeProfit = backTestRegistrySettings.PipTakeProfit.Select(s => decimal.Parse(s)).ToArray(),
+                PipSlippageValue = backTestRegistrySettings.PipSlippageValue.Select(s => decimal.Parse(s)).ToArray(),
+                PipTrailingStopLoss = backTestRegistrySettings.PipTrailingStopLoss.Select(s => decimal.Parse(s)).ToArray(),
+                MaxActiveTrades = backTestRegistrySettings.MaxActiveTrades.Select(s => decimal.Parse(s)).ToArray()
+            };
+
             var tradeBook = new TradeBook();
-            var practiceTradeViewModel = new PracticeTradeViewModel();
-            var practiceTradeThreadRunner = new PracticeTradeThreadRunner();
 
             services.AddSingleton(traderDashboardConfigurations);
             services.AddSingleton(backTestSettings);
+            services.AddSingleton(practiceTradeSettings);
             services.AddSingleton(tradeBook);
             services.AddTransient<RestClient>();
-            services.AddScoped<IOandaDataProvider, OandaDataProvider>();
+            services.AddTransient<IOandaDataProvider, OandaDataProvider>();
             services.AddScoped<ITradeManager, TradeManager>();
         }
 

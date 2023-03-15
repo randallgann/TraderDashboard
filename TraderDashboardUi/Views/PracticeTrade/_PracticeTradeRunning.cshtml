@@ -10,8 +10,12 @@
     <p>Strategy: @Model.Strategy</p>
     <br />
     <p>ElapsedTime: <span id="elapsedTime"></span></p>
+    <br />
+    <p>Most Recent Candle: <span id="mostRecentCandleDateTime"></span>&nbsp;Open: <span id="mostRecentCandleOpen"></span>&nbsp;High: <span id="mostRecentCandleHigh"></span>&nbsp;Low: <span id="mostRecentCandleLow"></span>&nbsp;Close: <span id="mostRecentCandleClose"></span>&nbsp;Complete: <span id="mostRecentCandleComplete"></span></p>
+    <br />
+    <p>In Progress Candle: <span id="inProgressCandleDateTime"></span>&nbsp;Open: <span id="inProgressCandleOpen"></span>&nbsp;High: <span id="inProgressCandleHigh"></span>&nbsp;Low: <span id="inProgressCandleLow"></span>&nbsp;Close: <span id="inProgressCandleClose"></span>&nbsp;Complete: <span id="inProgressCandleComplete"></span></p>
 </div>
 
-<input type="hidden" id="getElapsedTimeUrl" value="@Url.Action("GetElapsedTime", "PracticeTrade")" />
+<input type="hidden" id="UpdatePracticeTradeRunningUrl" value="@Url.Action("UpdatePracticeTradeRunning", "PracticeTrade")" />
 <input type="hidden" id="stopPracticeTradeUrl" value="@Url.Action("StopRunningPracticeTrade", "PracticeTrade")" />
 <input type="hidden" id="viewmodel-data" value="@Html.Raw(Json.Serialize(Model))">

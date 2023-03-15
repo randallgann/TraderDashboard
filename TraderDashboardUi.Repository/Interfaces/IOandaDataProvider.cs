@@ -12,5 +12,7 @@ namespace TraderDashboardUi.Repository.Interfaces
     {
         Task<OandaAccount> GetOandaAccount(string accountType);
         Task<OandaCandles> GetOandaCandles(string instrument, DateTime backTestStartDate, DateTime backTestEndDate);
+
+        Task<OandaCandles> GetOandaLatestCandles(string instrument);
     }
 }
