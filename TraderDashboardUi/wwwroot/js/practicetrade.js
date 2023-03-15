@@ -108,23 +108,37 @@ $(document).ready(function () {
 
 function startInterval() {
     // Get the URL of the GetElapsedTime action
-    var getElapsedTimeUrl = $("#getElapsedTimeUrl").val();
+    var getUpdatePracticeTradeRunningUrl = $("#UpdatePracticeTradeRunningUrl").val();
+    console.log(getUpdatePracticeTradeRunningUrl);
 
     // Start the interval function
     setInterval(function () {
         $.ajax({
-            url: getElapsedTimeUrl,
+            url: getUpdatePracticeTradeRunningUrl,
             type: "GET",
             dataType: "json",
             success: function (data) {
-                $("#elapsedTime").text(data);
+                $("#elapsedTime").text(data.elapsedTime);
+                $("#mostRecentCandleDateTime").text(data.candleTime);
+                $("#mostRecentCandleOpen").text(data.candleOpen);
+                $("#mostRecentCandleHigh").text(data.candleHigh);
+                $("#mostRecentCandleLow").text(data.candleLow);
+                $("#mostRecentCandleClose").text(data.candleClose);
+                $("#mostRecentCandleComplete").text(data.candleComplete);
+                $("#inProgressCandleDateTime").text(data.inProgressCandleTime);
+                $("#inProgressCandleOpen").text(data.inProgressCandleOpen);
+                $("#inProgressCandleHigh").text(data.inProgressCandleHigh);
+                $("#inProgressCandleLow").text(data.inProgressCandleLow);
+                $("#inProgressCandleClose").text(data.inProgressCandleClose);
+                $("#inProgressCandleComplete").text(data.inProgressCandleComplete);
+
             }
         });
     }, 1000);
 }
 
 function checkForUrl() {
-    var getElapsedTimeUrl = $("#getElapsedTimeUrl").val();
+    var getElapsedTimeUrl = $("#UpdatePracticeTradeRunningUrl").val();
     if (getElapsedTimeUrl) {
         startInterval();
     } else {

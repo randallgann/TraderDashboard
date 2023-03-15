@@ -46,7 +46,7 @@ namespace TraderDashboardUi.Repository.Tests.Providers
         public async Task GetOandaAccount_ReturnsOandaAccountResponse()
         {
             // Act
-            var result = await _provider.GetOandaAccount();
+            var result = await _provider.GetOandaAccount("live");
 
             // Assert
             Assert.IsNotNull(result);

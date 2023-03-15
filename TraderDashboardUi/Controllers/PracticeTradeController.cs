@@ -4,12 +4,14 @@ using Microsoft.Web.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using TraderDashboardUi.Models;
 using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.Providers;
 using TraderDashboardUi.Repository.Utilities;
+using static TraderDashboardUi.Entity.Oanda.OandaCandlesResponse;
 
 namespace TraderDashboardUi.Controllers
 {
@@ -17,19 +19,18 @@ namespace TraderDashboardUi.Controllers
     {
 
         private readonly ILogger<PracticeTradeController> _logger;
-        private readonly IOandaDataProvider _provider;
         private IBackTestStrategy _backTestStrategy;
+        private readonly IOandaDataProvider _provider;
         private readonly TraderDashboardConfigurations _traderDashboardConfigurations;
         private readonly ITradeManager _tradeManager;
         private static PracticeTradeThreadRunner _practiceTradeThreadRunner;
 
-        public PracticeTradeController(ILogger<PracticeTradeController> logger, IOandaDataProvider provider, TraderDashboardConfigurations configurations, ITradeManager tradeManager)
+        public PracticeTradeController(ILogger<PracticeTradeController> logger, TraderDashboardConfigurations configurations, ITradeManager tradeManager, IOandaDataProvider provider)
         {
             _logger = logger;
-            _provider = provider;
             _traderDashboardConfigurations = configurations;
             _tradeManager = tradeManager;
-
+            _provider = provider;
         }
 
         [HttpGet]
@@ -57,12 +58,36 @@ namespace TraderDashboardUi.Controllers
             }
         }
 
+        [AjaxOnly]
         [HttpGet]
-        public JsonResult GetElapsedTime()
+        public JsonResult UpdatePracticeTradeRunning()
         {
             if (_practiceTradeThreadRunner != null)
             {
-                return Json(_practiceTradeThreadRunner._elapsedTime);
+                TimeSpan elapsedTime = _practiceTradeThreadRunner.elapsedTime;
+                OCandle mostRecentCandle = _practiceTradeThreadRunner.mostRecentCandle;
+                OCandle inProgressCandle = _practiceTradeThreadRunner.inProgressCandle;
+
+                var jsonData = new
+                {
+                    elapsedTime = elapsedTime.ToString(),
+                    candleTime = mostRecentCandle.time,
+                    candleVolume = mostRecentCandle.volume,
+                    candleOpen = mostRecentCandle.mid.o,
+                    candleHigh = mostRecentCandle.mid.h,
+                    candleLow = mostRecentCandle.mid.l,
+                    candleClose = mostRecentCandle.mid.c,
+                    candleComplete = mostRecentCandle.complete,
+                    inProgressCandleTime = inProgressCandle.time,
+                    inProgressCandleVolume = inProgressCandle.volume,
+                    inProgressCandleOpen = inProgressCandle.mid.o,
+                    inProgressCandleHigh = inProgressCandle.mid.h,
+                    inProgressCandleLow = inProgressCandle.mid.l,
+                    inProgressCandleClose = inProgressCandle.mid.c,
+                    inProgressCandleComplete = inProgressCandle.complete,
+                };
+
+                return Json(jsonData);
             }
             else
             {
@@ -72,11 +97,9 @@ namespace TraderDashboardUi.Controllers
 
         public async Task<IActionResult> StartPracticeTrading(PracticeTradeViewModel model)
         {
-            Debug.WriteLine("StartPracticeTrading has been entered");
-
-            _practiceTradeThreadRunner = new PracticeTradeThreadRunner();
-            _practiceTradeThreadRunner._isRunning = true;
-            model.isRunning = _practiceTradeThreadRunner._isRunning;
+            _practiceTradeThreadRunner = new PracticeTradeThreadRunner(model.Instrument, model.Strategy, _traderDashboardConfigurations);
+            _practiceTradeThreadRunner.isRunning = true;
+            model.isRunning = _practiceTradeThreadRunner.isRunning;
 
             return await Task.FromResult(PartialView("_PracticeTradeRunning", model));
         }

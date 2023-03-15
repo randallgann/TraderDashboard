@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TraderDashboardUi.Entity;
 using static TraderDashboardUi.Entity.Oanda.OandaCandlesResponse;
+using System.Diagnostics;
 
 namespace TraderDashboardUi.Repository.Utilities
 {

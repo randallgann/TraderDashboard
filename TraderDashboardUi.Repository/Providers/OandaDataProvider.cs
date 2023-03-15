@@ -4,9 +4,11 @@ using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TraderDashboardUi.Entity.Oanda;
 using TraderDashboardUi.Repository.Interfaces;
@@ -148,7 +150,7 @@ namespace TraderDashboardUi.Repository.Providers
                 request.AddParameter("granularity", "M1");
 
                 // get api response
-                var taskResponse = Utilites.GetApiResponse(_restClient, request).Result;
+                var taskResponse = await Utilites.GetApiResponse(_restClient, request);
 
                 var result = JsonConvert.DeserializeObject<OandaCandles>(taskResponse);
 
@@ -175,6 +177,54 @@ namespace TraderDashboardUi.Repository.Providers
                 };
 
                 _logger.LogError(JsonConvert.SerializeObject(logErr));
+
+                throw;
+            }
+        }
+
+        public async Task<OandaCandles> GetOandaLatestCandles(string instrument)
+        {
+            if (DateTime.Now.Minute == 0 && DateTime.Now.Second == 0)
+            {
+                var logInfo = new
+                {
+                    Description = "Get Oanda LatestCandles Method Called -",
+                    Provider = nameof(OandaDataProvider)
+                };
+
+                _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
+            }
+
+            _restClient ??= new RestClient();
+
+            try
+            {
+                var oandaSettings = _traderDashboardConfigurations.oandaSettings;
+                var endPoint = oandaSettings.Endpoints.FirstOrDefault(x => x.Key == "latestCandles").Value;
+
+                _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+
+                // create a request
+                var request = new RestRequest(endPoint, Method.Get);
+                request.AddHeader("Authorization", oandaSettings.RequestHeaders.FirstOrDefault(x => x.Key == "Authorization").Value);
+                request.AddUrlSegment("accountId", oandaSettings.Id);
+                request.AddParameter("instrument", instrument);
+                request.AddParameter("granularity", "M1");
+
+                string finalUrl = _restClient.BuildUri(request).AbsoluteUri;
+
+                // get api response
+                var taskResponse = await Utilites.GetApiResponse(_restClient, request);
+
+                var result = JsonConvert.DeserializeObject<OandaCandles>(taskResponse);
+
+                return result;
+
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
 
                 throw;
             }
