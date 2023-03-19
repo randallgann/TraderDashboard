@@ -5,10 +5,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using TraderDashboardUi.Entity.Indicators;
+using TraderDashboardUi.Entity.Interfaces;
 
 namespace TraderDashboardUi.Entity.Strategies
 {
-    public class GuppyMMA
+    public class GuppyMMA : IStrategy
     {
         private string DirectionofTrend { get; set; } = null;
         private int DownTrendCount { get; set; } = 0;
@@ -61,7 +62,7 @@ namespace TraderDashboardUi.Entity.Strategies
             LongTermEMA.Add(_60EMA = new EMA(60));
         }
 
-        public void UpdateAllEMA(DataRow dataRow, int decimalPlaces)
+        public void UpdateIndicators(DataRow dataRow, int decimalPlaces)
         {
             // remove the lists
             PropertyInfo[] emaProperties = typeof(GuppyMMA).GetProperties(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)

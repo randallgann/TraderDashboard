@@ -6,11 +6,10 @@ namespace TraderDashboardUi.Entity
 {
     public class PracticeTradeRegistrySettings
     {
-        public string[] PipStopLoss { get; set; }
-        public string[] PipTakeProfit { get; set; }
-        public string[] PipSlippageValue { get; set; }
-        public string[] PipTrailingStopLoss { get; set; }
+        public string PipStopLoss { get; set; }
+        public string PipTakeProfit { get; set; }
+        public string PipTrailingStopLoss { get; set; }
 
-        public string[] MaxActiveTrades { get; set; }
+        public string MaxActiveTrades { get; set; }
     }
 }

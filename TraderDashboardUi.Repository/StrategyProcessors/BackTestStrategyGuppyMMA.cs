@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Text;
 using TraderDashboardUi.Entity;
+using TraderDashboardUi.Entity.Interfaces;
 using TraderDashboardUi.Entity.Strategies;
 using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.Providers;
@@ -14,7 +15,7 @@ namespace TraderDashboardUi.Repository.StrategyProcessors
     {
         private bool _isInitialized = false;
         private List<Candle> _candles = new List<Candle>();
-        private GuppyMMA _strategy = new GuppyMMA();
+        private IStrategy _strategy = new GuppyMMA();
 
         public BackTestStrategyGuppyMMA()
         { }
@@ -44,7 +45,7 @@ namespace TraderDashboardUi.Repository.StrategyProcessors
             {
                 //Debug.WriteLine(dw["Time"]);
                 //Debug.WriteLine(counter++);
-                _strategy.UpdateAllEMA(dw, decimalPlaces);
+                _strategy.UpdateIndicators(dw, decimalPlaces);
             }
 
             return dt;

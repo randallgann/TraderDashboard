@@ -10,7 +10,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TraderDashboardUi.Entity;
+using TraderDashboardUi.Entity.Interfaces;
+using TraderDashboardUi.Entity.Strategies;
 using TraderDashboardUi.Repository.Interfaces;
+using TraderDashboardUi.Repository.StrategyProcessors;
 using TraderDashboardUi.Repository.Utilities;
 using static TraderDashboardUi.Entity.Oanda.OandaCandlesResponse;
 
@@ -20,6 +23,7 @@ namespace TraderDashboardUi.Repository.Providers
     {
         private readonly ILogger<PracticeTradeThreadRunner> _logger;
         private IOandaDataProvider _provider;
+        private IStrategy _strategy;
         private Thread _thread;
         private DataTable _candlesDataTable;
         private TradeManager _tradeManager;
@@ -45,21 +49,30 @@ namespace TraderDashboardUi.Repository.Providers
         {
             bool isFirstIteration = true;
             var candleToAddToDataTable = new OCandle();
+            var tradingDataTable = new DataTable();
+            int decimalPlaces = 0;
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+
+            // get appropriate IBeckTestStrategy - StrategyProcessors
+            var strategyProcessor = GetStrategyProcessor(strategy);
+            if (strategyProcessor == null)
+            {
+                throw new Exception("strategy process is null");
+            }
+            _strategy = strategyProcessor;
 
             while (isRunning)
             {
                 if (isFirstIteration)
                 {
-                    // get the previous 60 candles
-                    Debug.WriteLine(RuntimeHelpers.GetHashCode(_provider));
                     var ocandles = await _provider.GetOandaLatestCandles(instrument);
                     // get the number of decimal places in the close value of the pair
-                    int decimalPlaces = ocandles.candles[0].mid.c.ToString().Split(".")[1].Length;
+                    decimalPlaces = ocandles.candles[0].mid.c.ToString().Split(".")[1].Length;
                     var last60MinCandles = await GetPrevious60MinutesofCandles(ocandles);
                     // create datatable of candles
                     _candlesDataTable = Utilites.ConvertOandaCandlesToDataTable(last60MinCandles);
                     stopwatch.Start();
+                    tradingDataTable = _strategy.ArrangeDataTable(_candlesDataTable);
                     isFirstIteration = false;
                 }
                 elapsedTime = stopwatch.Elapsed;
@@ -69,9 +82,11 @@ namespace TraderDashboardUi.Repository.Providers
                 if (mostRecentCandle.complete == true && mostRecentCandle.time != candleToAddToDataTable.time)
                 {
                     candleToAddToDataTable = mostRecentCandle;
-                    AddCandleToDataTable(_candlesDataTable, candleToAddToDataTable, candles.instrument, candles.granularity);
+                    AddCandleToDataTable(tradingDataTable, candleToAddToDataTable, candles.instrument, candles.granularity);
                     Debug.WriteLine($"Candle Added To DataTable - Time: {mostRecentCandle.time} Price: {mostRecentCandle.mid.c} Rows: {_candlesDataTable.Rows.Count}");
+                    _strategy.UpdateIndicators(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], decimalPlaces);
                 }
+                _tradeManager.PracticeTestExecuteTrades(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], decimalPlaces);
 
                 Thread.Sleep(30000);
 
@@ -133,6 +148,17 @@ namespace TraderDashboardUi.Repository.Providers
             };
 
             return ocandles;
+        }
+
+        private IStrategy GetStrategyProcessor(string strategy)
+        {
+            switch (strategy)
+            {
+                case "GUPPYMMA":
+                    return new GuppyMMA();
+                default:
+                    return null;
+            }
         }
 
         public void Dispose()

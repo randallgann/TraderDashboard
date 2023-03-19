@@ -67,11 +67,10 @@ namespace TraderDashboardUi
 
             var practiceTradeSettings = new PracticeTradeSettings()
             {
-                PipStopLoss = backTestRegistrySettings.PipStopLoss.Select(s => decimal.Parse(s)).ToArray(),
-                PipTakeProfit = backTestRegistrySettings.PipTakeProfit.Select(s => decimal.Parse(s)).ToArray(),
-                PipSlippageValue = backTestRegistrySettings.PipSlippageValue.Select(s => decimal.Parse(s)).ToArray(),
-                PipTrailingStopLoss = backTestRegistrySettings.PipTrailingStopLoss.Select(s => decimal.Parse(s)).ToArray(),
-                MaxActiveTrades = backTestRegistrySettings.MaxActiveTrades.Select(s => decimal.Parse(s)).ToArray()
+                PipStopLoss = decimal.Parse(practiceTradeRegistrySettings.PipStopLoss),
+                PipTakeProfit = decimal.Parse(practiceTradeRegistrySettings.PipTakeProfit),
+                PipTrailingStopLoss = decimal.Parse(practiceTradeRegistrySettings.PipTrailingStopLoss),
+                MaxActiveTrades = int.Parse(practiceTradeRegistrySettings.MaxActiveTrades)
             };
 
             var tradeBook = new TradeBook();

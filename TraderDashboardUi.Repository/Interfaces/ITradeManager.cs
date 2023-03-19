@@ -16,6 +16,7 @@ namespace TraderDashboardUi.Repository.Interfaces
         public int Units { get; set; }
 
         public TradeBook BackTestExecuteTrades(DataTable dataTable, int decimalPlaces);
+        public TradeBook PracticeTestExecuteTrades(DataRow dataRow, int decimalPlaces);
         public int ClosePosition();
         public int OpenPosition();
 

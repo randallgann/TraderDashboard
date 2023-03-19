@@ -11,6 +11,7 @@ namespace TraderDashboardUi.Repository.Providers
     public class TradeManager : ITradeManager
     {
         private BackTestSettings _backTestSettings;
+        private PracticeTradeSettings _practiceTradeSettings;
         public TradeBook _tradeBook { get; set; }
         public decimal PipStopLoss { get; set; }
         public decimal PipTakeProfit { get; set; }
@@ -27,10 +28,11 @@ namespace TraderDashboardUi.Repository.Providers
             _tradeBook = new TradeBook();
         }
 
-        public TradeManager(BackTestSettings backTestSettings, TradeBook tradeBook)
+        public TradeManager(BackTestSettings backTestSettings, PracticeTradeSettings practiceTradeSettings, TradeBook tradeBook)
         {
             _tradeBook = tradeBook;
             _backTestSettings = backTestSettings;
+            _practiceTradeSettings = practiceTradeSettings;
         }
 
         public int ClosePosition()
@@ -56,7 +58,7 @@ namespace TraderDashboardUi.Repository.Providers
                 backTestSettings["PipSlippageValue"] = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(backTestSettings["PipSlippageValue"], decimalPlaces);
                 backTestSettings["PipTrailingStopLoss"] = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(backTestSettings["PipTrailingStopLoss"], decimalPlaces);
 
-                // initialize counter to start trading only after 60 candles have been calculated in order to get accurate values of for 60EMA
+                // initialize counter to start trading only after 60 candles have been calculated in order to get accurate values for 60EMA
                 string startingTrend = null;
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -163,6 +165,22 @@ namespace TraderDashboardUi.Repository.Providers
             }
 
             
+            return _tradeBook;
+        }
+
+        public TradeBook PracticeTestExecuteTrades(DataRow dataRow, int decimalPlaces)
+        {
+            if (_tradeBook.Positions.Count != 0)
+            {
+                _tradeBook.Positions.Clear();
+            }
+
+            // convert pipcounts to pipvalues
+            var stoploss = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(_practiceTradeSettings.PipStopLoss, decimalPlaces);
+            var takeprofit = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(_practiceTradeSettings.PipTakeProfit, decimalPlaces);
+
+
+
             return _tradeBook;
         }
 
