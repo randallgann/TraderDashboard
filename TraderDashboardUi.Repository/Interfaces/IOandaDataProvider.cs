@@ -14,5 +14,10 @@ namespace TraderDashboardUi.Repository.Interfaces
         Task<OandaCandles> GetOandaCandles(string instrument, DateTime backTestStartDate, DateTime backTestEndDate);
 
         Task<OandaCandles> GetOandaLatestCandles(string instrument);
+
+        Task<OrderResponse> SendSellOrder(string instrument);
+        Task<OrderResponse> SendBuyOrder(string instrument);
+
+        Task<OrderResponse> CloseOrderById(string orderId);
     }
 }

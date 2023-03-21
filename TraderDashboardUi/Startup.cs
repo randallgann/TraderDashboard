@@ -70,7 +70,8 @@ namespace TraderDashboardUi
                 PipStopLoss = decimal.Parse(practiceTradeRegistrySettings.PipStopLoss),
                 PipTakeProfit = decimal.Parse(practiceTradeRegistrySettings.PipTakeProfit),
                 PipTrailingStopLoss = decimal.Parse(practiceTradeRegistrySettings.PipTrailingStopLoss),
-                MaxActiveTrades = int.Parse(practiceTradeRegistrySettings.MaxActiveTrades)
+                MaxActiveTrades = int.Parse(practiceTradeRegistrySettings.MaxActiveTrades),
+                Units = int.Parse(practiceTradeRegistrySettings.Units),
             };
 
             var tradeBook = new TradeBook();
@@ -79,9 +80,23 @@ namespace TraderDashboardUi
             services.AddSingleton(backTestSettings);
             services.AddSingleton(practiceTradeSettings);
             services.AddSingleton(tradeBook);
-            services.AddTransient<RestClient>();
-            services.AddTransient<IOandaDataProvider, OandaDataProvider>();
-            services.AddScoped<ITradeManager, TradeManager>();
+            services.AddSingleton<RestClient>();
+            services.AddTransient<IOandaDataProvider, OandaDataProvider>(provider => new OandaDataProvider(
+                provider.GetService<ILogger<OandaDataProvider>>(),
+                provider.GetService<RestClient>(),
+                provider.GetService<TraderDashboardConfigurations>(),
+                provider.GetService<PracticeTradeSettings>()));
+            services.AddSingleton<ITradeManager, TradeManager>(provider => new TradeManager(
+                provider.GetService<ILogger<TradeManager>>(),
+                provider.GetService<BackTestSettings>(),
+                provider.GetService<PracticeTradeSettings>(),
+                provider.GetService<TradeBook>(),
+                provider.GetService<IOandaDataProvider>()));
+            services.AddSingleton<PracticeTradeThreadRunner>(provider => new PracticeTradeThreadRunner(
+                provider.GetService<TraderDashboardConfigurations>(),
+                provider.GetService<PracticeTradeSettings>(),
+                provider.GetService<ITradeManager>(),
+                provider.GetService<IOandaDataProvider>()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

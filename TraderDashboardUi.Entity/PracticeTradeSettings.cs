@@ -10,5 +10,6 @@ namespace TraderDashboardUi.Entity
         public decimal PipTakeProfit { get; set; }
         public decimal PipTrailingStopLoss { get; set; }
         public int MaxActiveTrades { get; set; }
+        public int Units { get; set; }
     }
 }

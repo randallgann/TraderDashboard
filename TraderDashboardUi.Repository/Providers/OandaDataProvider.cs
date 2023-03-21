@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TraderDashboardUi.Entity;
 using TraderDashboardUi.Entity.Oanda;
 using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.Utilities;
@@ -23,13 +24,15 @@ namespace TraderDashboardUi.Repository.Providers
         private readonly ILogger<OandaDataProvider> _logger;
         private RestClient _restClient;
         private readonly TraderDashboardConfigurations _traderDashboardConfigurations;
+        private readonly PracticeTradeSettings _practiceTradeSettings;
         private Utilites _utilites;
 
-        public OandaDataProvider(ILogger<OandaDataProvider> logger, RestClient restClient, TraderDashboardConfigurations traderDashboardConfigurations)
+        public OandaDataProvider(ILogger<OandaDataProvider> logger, RestClient restClient, TraderDashboardConfigurations traderDashboardConfigurations, PracticeTradeSettings practiceTradeSettings)
         {
             _logger = logger;
             _restClient = restClient;
             _traderDashboardConfigurations = traderDashboardConfigurations;
+            _practiceTradeSettings = practiceTradeSettings;
         }
 
         public async Task<OandaAccount> GetOandaAccount(string accountType)
@@ -211,8 +214,6 @@ namespace TraderDashboardUi.Repository.Providers
                 request.AddParameter("instrument", instrument);
                 request.AddParameter("granularity", "M1");
 
-                string finalUrl = _restClient.BuildUri(request).AbsoluteUri;
-
                 // get api response
                 var taskResponse = await Utilites.GetApiResponse(_restClient, request);
 
@@ -221,6 +222,132 @@ namespace TraderDashboardUi.Repository.Providers
                 return result;
 
 
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+
+                throw;
+            }
+        }
+
+        public async Task<OrderResponse> SendBuyOrder(string instrument)
+        {
+            var payload = new
+            {
+                order = new Order
+                {
+                    Units = _practiceTradeSettings.Units.ToString(),
+                    Instrument = instrument,
+                    TimeInForce = "FOK",
+                    Type = "MARKET",
+                    PositionFill = "DEFAULT"
+                }
+            };
+
+            _restClient ??= new RestClient();
+
+            try
+            {
+                var oandaSettings = _traderDashboardConfigurations.oandaSettings;
+                var endPoint = oandaSettings.Endpoints.FirstOrDefault(x => x.Key == "createOrder").Value;
+
+                _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+
+                // create a request
+                var request = new RestRequest(endPoint, Method.Post);
+                request.AddHeader("Authorization", oandaSettings.RequestHeaders.FirstOrDefault(x => x.Key == "Authorization").Value);
+                request.AddUrlSegment("accountId", oandaSettings.Id);
+                string jsonPayload = JsonConvert.SerializeObject(payload);
+                request.AddParameter("application/json", jsonPayload, ParameterType.RequestBody);
+
+                // get api response
+                var taskResponse = await Utilites.GetApiResponse(_restClient, request);
+
+                var result = JsonConvert.DeserializeObject<OrderResponse>(taskResponse);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+
+                throw;
+            }
+
+        }
+
+        public async Task<OrderResponse> SendSellOrder(string instrument)
+        {
+            var units = -_practiceTradeSettings.Units;
+            var payload = new
+            {
+                order = new Order
+                {
+                    Units = units.ToString(),
+                    Instrument = instrument,
+                    TimeInForce = "FOK",
+                    Type = "MARKET",
+                    PositionFill = "DEFAULT"
+                }
+            };
+
+            _restClient ??= new RestClient();
+
+            try
+            {
+                var oandaSettings = _traderDashboardConfigurations.oandaSettings;
+                var endPoint = oandaSettings.Endpoints.FirstOrDefault(x => x.Key == "createOrder").Value;
+
+                _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+
+                // create a request
+                var request = new RestRequest(endPoint, Method.Post);
+                request.AddHeader("Authorization", oandaSettings.RequestHeaders.FirstOrDefault(x => x.Key == "Authorization").Value);
+                request.AddUrlSegment("accountId", oandaSettings.Id);
+                string jsonPayload = JsonConvert.SerializeObject(payload);
+                request.AddParameter("application/json", jsonPayload, ParameterType.RequestBody);
+
+                // get api response
+                var taskResponse = await Utilites.GetApiResponse(_restClient, request);
+
+                var result = JsonConvert.DeserializeObject<OrderResponse>(taskResponse);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+
+                throw;
+            }
+
+        }
+
+        public async Task<OrderResponse> CloseOrderById(string orderId)
+        {
+            _restClient ??= new RestClient();
+
+            try
+            {
+                var oandaSettings = _traderDashboardConfigurations.oandaSettings;
+                var endPoint = oandaSettings.Endpoints.FirstOrDefault(x => x.Key == "closeOrderById").Value;
+
+                _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+
+                // create a request
+                var request = new RestRequest(endPoint, Method.Put);
+                request.AddHeader("Authorization", oandaSettings.RequestHeaders.FirstOrDefault(x => x.Key == "Authorization").Value);
+                request.AddUrlSegment("accountId", oandaSettings.Id);
+                request.AddUrlSegment("tradeId", orderId);
+
+
+                // get api response
+                var taskResponse = await Utilites.GetApiResponse(_restClient, request);
+
+                var result = JsonConvert.DeserializeObject<OrderResponse>(taskResponse);
+
+                return result;
             }
             catch (Exception ex)
             {

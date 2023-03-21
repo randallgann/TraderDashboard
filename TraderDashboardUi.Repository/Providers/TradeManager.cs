@@ -1,38 +1,50 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using TraderDashboardUi;
 using TraderDashboardUi.Entity;
+using TraderDashboardUi.Entity.Oanda;
 using TraderDashboardUi.Repository.Interfaces;
 
 namespace TraderDashboardUi.Repository.Providers
 {
     public class TradeManager : ITradeManager
     {
+        private readonly ILogger<TradeManager> _logger;
         private BackTestSettings _backTestSettings;
         private PracticeTradeSettings _practiceTradeSettings;
-        public TradeBook _tradeBook { get; set; }
-        public decimal PipStopLoss { get; set; }
-        public decimal PipTakeProfit { get; set; }
+        private readonly IOandaDataProvider _oandaDataProvider;
+        private bool _hasDirectionOfTrendChanged = false;
+        private bool _isFirstCall = true;
+        private object _previousDirectionOfTrend = null;
+        public TradeBook tradeBook { get; set; }
+        public decimal PipStopLoss { get; set; } = 0;
+        public decimal PipTakeProfit { get; set; } = 0;
 
         public decimal PipSlippageValue { get; set; }
         public int Units { get; set; }
 
         public int MaxActiveTrades { get; set; }
 
-        public int CandleCounter { get; set; } = 1;
+        public int CandleCounter { get; set; } = 0;
 
         public TradeManager()
         {
-            _tradeBook = new TradeBook();
+            this.tradeBook = new TradeBook();
         }
 
-        public TradeManager(BackTestSettings backTestSettings, PracticeTradeSettings practiceTradeSettings, TradeBook tradeBook)
+        public TradeManager(ILogger<TradeManager> logger, BackTestSettings backTestSettings, PracticeTradeSettings practiceTradeSettings, TradeBook tradeBook, IOandaDataProvider oandaDataProvider)
         {
-            _tradeBook = tradeBook;
+            this.tradeBook = tradeBook;
+            _logger = logger;
             _backTestSettings = backTestSettings;
             _practiceTradeSettings = practiceTradeSettings;
+            _oandaDataProvider = oandaDataProvider;
         }
 
         public int ClosePosition()
@@ -42,9 +54,9 @@ namespace TraderDashboardUi.Repository.Providers
 
         public TradeBook BackTestExecuteTrades(DataTable dt, int decimalPlaces)
         {
-            if (_tradeBook.Positions.Count != 0)
+            if (tradeBook.Positions.Count != 0)
             {
-                _tradeBook.Positions.Clear();
+                tradeBook.Positions.Clear();
             }
 
             var backTestSettingsList = GetSettingsCombinations();
@@ -59,17 +71,25 @@ namespace TraderDashboardUi.Repository.Providers
                 backTestSettings["PipTrailingStopLoss"] = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(backTestSettings["PipTrailingStopLoss"], decimalPlaces);
 
                 // initialize counter to start trading only after 60 candles have been calculated in order to get accurate values for 60EMA
-                string startingTrend = null;
                 foreach (DataRow dr in dt.Rows)
                 {
-                    if (CandleCounter == 1)
+                    if (_previousDirectionOfTrend == null)
                     {
-                        startingTrend = dr["DirectionofTrend"].ToString();
+                        _previousDirectionOfTrend = dr["DirectionofTrend"];
                     }
-                    if (CandleCounter > 60 && startingTrend != dr["DirectionofTrend"].ToString())
+                    else
+                    {
+                        object currentDirectionofTrend = dr["DirectionofTrend"];
+                        if (!currentDirectionofTrend.Equals(_previousDirectionOfTrend))
+                        {
+                            _hasDirectionOfTrendChanged = true;
+                            _previousDirectionOfTrend = currentDirectionofTrend;
+                        }
+                    }
+                    if (CandleCounter > 60 && _hasDirectionOfTrendChanged)
                     {
                         CandleCounter++;
-                        if (dr["Signal"].ToString() == "1" && _tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
+                        if (dr["Signal"].ToString() == "1" && tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
                         {
                             Random rand = new Random();
 
@@ -85,9 +105,9 @@ namespace TraderDashboardUi.Repository.Providers
                                 BackTestBuySell = "Sell"
                             };
 
-                            _tradeBook.Positions.Add(trade);
+                            tradeBook.Positions.Add(trade);
                         }
-                        else if (dr["Signal"].ToString() == "2" && _tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
+                        else if (dr["Signal"].ToString() == "2" && tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
                         {
                             Random rand = new Random();
                             var trade = new Position
@@ -102,15 +122,15 @@ namespace TraderDashboardUi.Repository.Providers
                                 BackTestBuySell = "Buy"
                             };
 
-                            _tradeBook.Positions.Add(trade);
+                            tradeBook.Positions.Add(trade);
                         }
 
-                        if (_tradeBook.Positions.Count > 0)
+                        if (tradeBook.Positions.Count > 0)
                         {
                             decimal currentPrice = Convert.ToDecimal(dr["Close"]);
                             decimal highPrice = Convert.ToDecimal(dr["High"]);
                             decimal lowPrice = Convert.ToDecimal(dr["Low"]);
-                            foreach (var pos in _tradeBook.Positions)
+                            foreach (var pos in tradeBook.Positions)
                             {
                                 if (pos.BackTestActive)
                                 {
@@ -165,28 +185,176 @@ namespace TraderDashboardUi.Repository.Providers
             }
 
             
-            return _tradeBook;
+            return tradeBook;
         }
 
-        public TradeBook PracticeTestExecuteTrades(DataRow dataRow, int decimalPlaces)
+        public void PracticeTradeExecute(DataRow dataRow, int decimalPlaces)
         {
-            if (_tradeBook.Positions.Count != 0)
+            if ( _isFirstCall )
             {
-                _tradeBook.Positions.Clear();
+                tradeBook.Positions.Clear();
+                _isFirstCall = false;
             }
 
             // convert pipcounts to pipvalues
-            var stoploss = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(_practiceTradeSettings.PipStopLoss, decimalPlaces);
-            var takeprofit = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(_practiceTradeSettings.PipTakeProfit, decimalPlaces);
+            //
+            PipStopLoss = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(_practiceTradeSettings.PipStopLoss, decimalPlaces);
+            PipTakeProfit = GetPipValuesBasedOnDecimalPlacesInCurrencyPair(_practiceTradeSettings.PipTakeProfit, decimalPlaces);
+
+            if (_previousDirectionOfTrend == null)
+            {
+                _previousDirectionOfTrend = dataRow["DirectionofTrend"];
+            }
+            else
+            {
+                object currentDirectionofTrend = dataRow["DirectionofTrend"];
+                if (!currentDirectionofTrend.Equals(_previousDirectionOfTrend))
+                {
+                    _hasDirectionOfTrendChanged = true;
+                    _previousDirectionOfTrend = currentDirectionofTrend;
+                }
+            }
+
+            if (CandleCounter > 60)
+            {
+                CandleCounter++;
+                // if the candle is a sell signal and the active positions count is less than maxActiveTrades
+                if (dataRow["Signal"].ToString() == "1" && tradeBook.Positions.Count(prop => prop.ActiveTrade) < _practiceTradeSettings.MaxActiveTrades)
+                {
+                    // open a sell position
+                    var response = _oandaDataProvider.SendSellOrder(dataRow["Instrument"].ToString()).Result;
+                    Debug.WriteLine("Trade Manager - Sell Order Executed");
+                    _logger.LogInformation("Trade Manager - Sell Order Executed to tradeFile.");
+
+                    var logInfo = new
+                    {
+                        Description = "Sell Order Created",
+                        Provider = nameof(TradeManager)
+                    };
+
+                    _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
+
+                    if (response.orderCancelTransaction == null && response.orderFillTransaction != null)
+                    {
+                        var trade = new Position
+                        {
+                            TransactionId = response.orderFillTransaction.tradeOpened.tradeID,
+                            Time = response.orderFillTransaction.time,
+                            Instrument = response.orderFillTransaction.instrument,
+                            Price = Convert.ToDecimal(response.orderFillTransaction.tradeOpened.price),
+                            Units = Convert.ToInt32(response.orderFillTransaction.tradeOpened.units),
+                            ActiveTrade = true,
+                            ActiveTradePipStopLoss = Convert.ToDecimal(response.orderFillTransaction.tradeOpened.price) + PipStopLoss,
+                            ActiveTradePipTakeProfit = Convert.ToDecimal(response.orderFillTransaction.tradeOpened.price) - PipTakeProfit,
+                            ActiveTradeBuySell = "Sell"
+                        };
+
+                        tradeBook.Positions.Add(trade);
+                    }
+                }
+                else if (dataRow["Signal"].ToString() == "2" && tradeBook.Positions.Count(prop => prop.ActiveTrade) < _practiceTradeSettings.MaxActiveTrades)
+                {
+                    // open a buy position
+                    var response = _oandaDataProvider.SendBuyOrder(dataRow["Instrument"].ToString()).Result;
+                    Debug.WriteLine("Trade Manager - Buy Order Executed");
+                    _logger.LogInformation("Trade Manager - Buy Order Executed to tradeFile.");
 
 
+                    if (response.orderCancelTransaction == null && response.orderFillTransaction != null)
+                    {
+                        var trade = new Position
+                        {
+                            TransactionId = response.orderFillTransaction.tradeOpened.tradeID,
+                            Time = response.orderFillTransaction.time,
+                            Instrument = response.orderFillTransaction.instrument,
+                            Price = Convert.ToDecimal(response.orderFillTransaction.tradeOpened.price),
+                            Units = Convert.ToInt32(response.orderFillTransaction.tradeOpened.units),
+                            ActiveTrade = true,
+                            ActiveTradePipStopLoss = Convert.ToDecimal(response.orderFillTransaction.tradeOpened.price) - PipStopLoss,
+                            ActiveTradePipTakeProfit = Convert.ToDecimal(response.orderFillTransaction.tradeOpened.price) + PipTakeProfit,
+                            ActiveTradeBuySell = "Buy"
+                        };
 
-            return _tradeBook;
-        }
+                        tradeBook.Positions.Add(trade);
+                    }
+                }
+                if (tradeBook.Positions.Count > 0)
+                {
+                    decimal currentPrice = Convert.ToDecimal(dataRow["Close"]);
+                    decimal highPrice = Convert.ToDecimal(dataRow["High"]);
+                    decimal lowPrice = Convert.ToDecimal(dataRow["Low"]);
+                    foreach (var pos in tradeBook.Positions)
+                    {
+                        if (pos.ActiveTrade)
+                        {
+                            if (pos.ActiveTradeBuySell == "Buy")
+                            {
+                                if (currentPrice <= pos.ActiveTradePipStopLoss)
+                                {
+                                    var response = _oandaDataProvider.CloseOrderById(pos.TransactionId).Result;
+                                    _logger.LogInformation("Trade Manager - Close Order Executed to tradeFile.");
 
-        public int OpenPosition()
-        {
-            throw new NotImplementedException();
+                                    if (response.orderFillTransaction.tradesClosed != null)
+                                    {
+                                        pos.ActiveTrade = false;
+                                        pos.ActiveTradeClosePositionPrice = response.orderFillTransaction.tradesClosed.FirstOrDefault(t => t.tradeID == pos.TransactionId).price;
+                                        pos.ActiveTradeRealizedPL = Math.Round(Convert.ToDecimal(response.orderFillTransaction.tradesClosed.FirstOrDefault(t => t.tradeID == pos.TransactionId).realizedPL), decimalPlaces);
+                                        pos.BackTestWinLoss = false;
+                                    }
+                                }
+                                else if (currentPrice >= pos.ActiveTradePipTakeProfit)
+                                {
+                                    var response = _oandaDataProvider.CloseOrderById(pos.TransactionId).Result;
+                                    _logger.LogInformation("Trade Manager - Close Order Executed to tradeFile.");
+
+                                    if (response.orderFillTransaction.tradesClosed != null)
+                                    {
+                                        pos.ActiveTrade = false;
+                                        pos.ActiveTradeClosePositionPrice = response.orderFillTransaction.tradesClosed.FirstOrDefault(t => t.tradeID == pos.TransactionId).price;
+                                        pos.ActiveTradeRealizedPL = Math.Round(Convert.ToDecimal(response.orderFillTransaction.tradesClosed.FirstOrDefault(t => t.tradeID == pos.TransactionId).realizedPL), decimalPlaces);
+                                        pos.BackTestWinLoss = true;
+                                    }
+                                }
+                            }
+
+                            if (pos.ActiveTradeBuySell == "Sell")
+                            {
+                                if (currentPrice >= pos.ActiveTradePipStopLoss)
+                                {
+                                    var response = _oandaDataProvider.CloseOrderById(pos.TransactionId).Result;
+                                    _logger.LogInformation("Trade Manager - Close Order Executed to tradeFile.");
+
+                                    if (response.orderFillTransaction.tradesClosed != null)
+                                    {
+                                        pos.ActiveTrade = false;
+                                        pos.ActiveTradeClosePositionPrice = response.orderFillTransaction.tradesClosed.FirstOrDefault(t => t.tradeID == pos.TransactionId).price;
+                                        pos.ActiveTradeRealizedPL = Math.Round(Convert.ToDecimal(response.orderFillTransaction.tradesClosed.FirstOrDefault(t => t.tradeID == pos.TransactionId).realizedPL), decimalPlaces);
+                                        pos.BackTestWinLoss = false;
+                                    }
+                                }
+                                else if (currentPrice <= pos.ActiveTradePipTakeProfit)
+                                {
+                                    var response = _oandaDataProvider.CloseOrderById(pos.TransactionId).Result;
+                                    _logger.LogInformation("Trade Manager - Close Order Executed to tradeFile.");
+
+                                    if (response.orderFillTransaction.tradesClosed != null)
+                                    {
+                                        pos.ActiveTrade = false;
+                                        pos.ActiveTradeClosePositionPrice = response.orderFillTransaction.tradesClosed.FirstOrDefault(t => t.tradeID == pos.TransactionId).price;
+                                        pos.ActiveTradeRealizedPL = Math.Round(Convert.ToDecimal(response.orderFillTransaction.tradesClosed.FirstOrDefault(t => t.tradeID == pos.TransactionId).realizedPL), decimalPlaces);
+                                        pos.BackTestWinLoss = true;
+                                    };
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                CandleCounter++;
+            }
         }
 
         public List<Dictionary<string, decimal>> GetSettingsCombinations()

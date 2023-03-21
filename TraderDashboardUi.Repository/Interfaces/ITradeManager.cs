@@ -15,10 +15,12 @@ namespace TraderDashboardUi.Repository.Interfaces
         public decimal PipSlippageValue { get; set; }
         public int Units { get; set; }
 
+        public TradeBook tradeBook { get; set; }
+
+        public int CandleCounter { get; set; }
+
         public TradeBook BackTestExecuteTrades(DataTable dataTable, int decimalPlaces);
-        public TradeBook PracticeTestExecuteTrades(DataRow dataRow, int decimalPlaces);
-        public int ClosePosition();
-        public int OpenPosition();
+        public void PracticeTradeExecute(DataRow dataRow, int decimalPlaces);
 
     }
 }

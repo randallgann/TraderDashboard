@@ -15,7 +15,46 @@
     <br />
     <p>In Progress Candle: <span id="inProgressCandleDateTime"></span>&nbsp;Open: <span id="inProgressCandleOpen"></span>&nbsp;High: <span id="inProgressCandleHigh"></span>&nbsp;Low: <span id="inProgressCandleLow"></span>&nbsp;Close: <span id="inProgressCandleClose"></span>&nbsp;Complete: <span id="inProgressCandleComplete"></span></p>
 </div>
+<br />
+<br />
+<div class="container-fluid">
+    <h2>Active Trades Info:</h2>
+    <br />
+    <table style="width: 100%" id="activeTradesTable">
+        <tr>
+            <th>Total Trades</th>
+            <th>Active Trades</th>
+            <th>Entry Price</th>
+            <th>Entry Time</th>
+            <th>Direction</th>
+            <th>StopLoss</th>
+            <th>TakeProfit</th>
+            <th>Total P/L</th>
+        </tr>
+        <tr>
+            <td id="numberOfTotalTrades"></td>
+            <td id="numberOfActiveTrades"></td>
+            <td id="currentTradeEntryPrice"></td>
+            <td id="currentTradeEntryTime"></td>
+            <td id="currentTradeEntryDirection"></td>
+            <td id="currentTradeStopLoss"></td>
+            <td id="currentTradeTakeProfit"></td>
+            <td id="activeTradesPL"></td>
+        </tr>
+    </table>
+</div>
+<br />
+<br />
+<div class="container-fluid">
+    <h2>DataTable:</h2>
+    <br />
+    <p>CandleCounter: <span id="candleCounter"></span></p>
+    <br />
+    <table style="width: 100%" id="dataTable"><tbody></tbody></table>
+</div>
 
 <input type="hidden" id="UpdatePracticeTradeRunningUrl" value="@Url.Action("UpdatePracticeTradeRunning", "PracticeTrade")" />
+<input type="hidden" id="UpdateActiveTradeInfoUrl" value="@Url.Action("UpdateActiveTradeInfo", "PracticeTrade")" />
+<input type="hidden" id="UpdatePracticeTradeDataTableUrl" value="@Url.Action("UpdatePracticeTradeDataTable", "PracticeTrade")" />
 <input type="hidden" id="stopPracticeTradeUrl" value="@Url.Action("StopRunningPracticeTrade", "PracticeTrade")" />
 <input type="hidden" id="viewmodel-data" value="@Html.Raw(Json.Serialize(Model))">

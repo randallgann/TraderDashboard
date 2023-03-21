@@ -63,7 +63,7 @@ namespace TraderDashboardUi.Controllers
                 var candles = await _provider.GetOandaCandles(model.Instrument, model.BackTestStartDate, model.BackTestEndDate);
 
                 // get the number of decimal places in the close value of the pair
-                int decimalPlaces = candles.candles[0].mid.c.ToString().Split(".")[1].Length;
+                int decimalPlaces = candles.candles[0].mid.c.ToString().Split(".")[1].Length - 1;
 
                 // convert to datatable
                 DataTable dt = Utilites.ConvertOandaCandlesToDataTable(candles);
