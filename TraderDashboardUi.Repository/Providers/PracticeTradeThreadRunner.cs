@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TraderDashboardUi;
 using TraderDashboardUi.Entity;
 using TraderDashboardUi.Entity.Interfaces;
 using TraderDashboardUi.Entity.Strategies;
@@ -25,31 +26,40 @@ namespace TraderDashboardUi.Repository.Providers
         private IOandaDataProvider _provider;
         private IStrategy _strategy;
         private Thread _thread;
-        private DataTable _candlesDataTable;
-        private TradeManager _tradeManager;
-        private RestClient _restClient;
+        public DataTable _candlesDataTable;
+        public DataTable tradingDataTable;
+        public ITradeManager _tradeManager;
+        //private RestClient _restClient;
         public OCandle mostRecentCandle;
         public OCandle inProgressCandle;
         public bool isRunning = false;
         public TimeSpan elapsedTime;
-        public string instrument;
-        public string strategy;
+        public PracticeTradeSettings _practiceTradeSettings;
 
-        public PracticeTradeThreadRunner(string instrument, string strategy, TraderDashboardConfigurations traderDashboardConfigurations)
+        public PracticeTradeThreadRunner(TraderDashboardConfigurations traderDashboardConfigurations, PracticeTradeSettings practiceTradeSettings, ITradeManager tradeManager, IOandaDataProvider oandaDataProvider)
         {
+            this.tradingDataTable = new DataTable();
             this._thread = new Thread(StartPracticeTradingThread);
+            //this._thread.Start();
+
+            _tradeManager = tradeManager;
+            _practiceTradeSettings = practiceTradeSettings;
+            _provider = oandaDataProvider;
+            //_provider = new OandaDataProvider((ILogger<OandaDataProvider>)_logger, _restClient, traderDashboardConfigurations, _practiceTradeSettings);
+        }
+
+        public string instrument { get; set; }
+        public string strategy { get; set; }
+
+        public void StartThread()
+        {
             this._thread.Start();
-            this.instrument = instrument;
-            this.strategy = strategy;
-            _provider = new OandaDataProvider((ILogger<OandaDataProvider>)_logger, _restClient, traderDashboardConfigurations);
-            _tradeManager = new TradeManager();
         }
 
         public async void StartPracticeTradingThread()
         {
             bool isFirstIteration = true;
             var candleToAddToDataTable = new OCandle();
-            var tradingDataTable = new DataTable();
             int decimalPlaces = 0;
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
@@ -73,22 +83,37 @@ namespace TraderDashboardUi.Repository.Providers
                     _candlesDataTable = Utilites.ConvertOandaCandlesToDataTable(last60MinCandles);
                     stopwatch.Start();
                     tradingDataTable = _strategy.ArrangeDataTable(_candlesDataTable);
+                    foreach (DataRow dr in tradingDataTable.Rows)
+                    {
+                        _strategy.UpdateIndicators(dr, decimalPlaces);
+                    }
+
+                    foreach(DataRow dr in tradingDataTable.Rows)
+                    {
+                        _tradeManager.PracticeTradeExecute(dr, decimalPlaces);
+                    }
                     isFirstIteration = false;
                 }
                 elapsedTime = stopwatch.Elapsed;
-                var candles = _provider.GetOandaLatestCandles(instrument).Result;
-                mostRecentCandle = GetMostRecentCandle(candles, true);
-                inProgressCandle = GetMostRecentCandle(candles);
-                if (mostRecentCandle.complete == true && mostRecentCandle.time != candleToAddToDataTable.time)
+                try
                 {
-                    candleToAddToDataTable = mostRecentCandle;
-                    AddCandleToDataTable(tradingDataTable, candleToAddToDataTable, candles.instrument, candles.granularity);
-                    Debug.WriteLine($"Candle Added To DataTable - Time: {mostRecentCandle.time} Price: {mostRecentCandle.mid.c} Rows: {_candlesDataTable.Rows.Count}");
-                    _strategy.UpdateIndicators(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], decimalPlaces);
+                    var candles = _provider.GetOandaLatestCandles(instrument).Result;
+                    mostRecentCandle = GetMostRecentCandle(candles, true);
+                    inProgressCandle = GetMostRecentCandle(candles);
+                    if (mostRecentCandle.complete == true && mostRecentCandle.time != candleToAddToDataTable.time)
+                    {
+                        candleToAddToDataTable = mostRecentCandle;
+                        AddCandleToDataTable(tradingDataTable, candleToAddToDataTable, candles.instrument, candles.granularity);
+                        Debug.WriteLine($"Candle Added To DataTable - Time: {mostRecentCandle.time} Price: {mostRecentCandle.mid.c} Rows: {_candlesDataTable.Rows.Count}");
+                        _strategy.UpdateIndicators(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], decimalPlaces);
+                        _tradeManager.PracticeTradeExecute(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], decimalPlaces);
+                    }
                 }
-                _tradeManager.PracticeTestExecuteTrades(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], decimalPlaces);
-
-                Thread.Sleep(30000);
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("Unable to get Latest or Most Recent Candles In PracticeTradeThreadRunner");
+                }
+                Thread.Sleep(10000);
 
             }
         }

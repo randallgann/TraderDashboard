@@ -109,7 +109,8 @@ $(document).ready(function () {
 function startInterval() {
     // Get the URL of the GetElapsedTime action
     var getUpdatePracticeTradeRunningUrl = $("#UpdatePracticeTradeRunningUrl").val();
-    console.log(getUpdatePracticeTradeRunningUrl);
+    var getUpdatePracticeTradeDataTableUrl = $("#UpdatePracticeTradeDataTableUrl").val();
+    var getUpdateActiveTradeInfoUrl = $("#UpdateActiveTradeInfoUrl").val();
 
     // Start the interval function
     setInterval(function () {
@@ -131,10 +132,62 @@ function startInterval() {
                 $("#inProgressCandleLow").text(data.inProgressCandleLow);
                 $("#inProgressCandleClose").text(data.inProgressCandleClose);
                 $("#inProgressCandleComplete").text(data.inProgressCandleComplete);
+                $("#numberOfActiveTrades").text(data.activeTrades);
+                $("#activeTradesPL").text(data.realizedPL);
+                $("#candleCounter").text(data.candleCounter);
+                $("#numberOfTotalTrades").text(data.numberOfTotalTrades);
 
             }
         });
-    }, 1000);
+    }, 5000);
+
+    setInterval(function () {
+        $.ajax({
+            url: getUpdateActiveTradeInfoUrl,
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                $("#currentTradeEntryPrice").text(data.currentTradeEntryPrice);
+                $("#currentTradeStopLoss").text(data.currentTradeStopLoss);
+                $("#currentTradeTakeProfit").text(data.currentTradeTakeProfit);
+                $("#currentTradeEntryTime").text(data.currentTradeEntryTime);
+                $("#currentTradeEntryDirection").text(data.currentTradeEntryDirection);
+
+            }
+        });
+    }, 6000);
+
+    setInterval(function () {
+        console.log("Updating DataTable");
+        $.ajax({
+            url: getUpdatePracticeTradeDataTableUrl,
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                $("#dataTable tbody").empty();
+                var thtr = $("<tr>");
+                $("<th>").text("Time").appendTo(thtr);
+                $("<th>").text("Close").appendTo(thtr);
+                $("<th>").text("_3EMA").appendTo(thtr);
+                $("<th>").text("_60EMA").appendTo(thtr);
+                $("<th>").text("DirectionofTrend").appendTo(thtr);
+                $("<th>").text("Signal").appendTo(thtr);
+                $("#dataTable tbody").append(thtr);
+
+                $.each(JSON.parse(data), function (i, $val) {
+                    var tr = $("<tr>");
+                    $("<td>").text($val.Time).appendTo(tr);
+                    $("<td>").text($val.Close).appendTo(tr);
+                    $("<td>").text($val._3EMA).appendTo(tr);
+                    $("<td>").text($val._60EMA).appendTo(tr);
+                    $("<td>").text($val.DirectionofTrend).appendTo(tr);
+                    $("<td>").text($val.Signal).appendTo(tr);
+                    $("#dataTable tbody").append(tr);
+                })
+
+            }
+        });
+    }, 1000)
 }
 
 function checkForUrl() {

@@ -11,5 +11,7 @@ namespace TraderDashboardUi.Entity
         public string PipTrailingStopLoss { get; set; }
 
         public string MaxActiveTrades { get; set; }
+
+        public string Units { get; set; }
     }
 }

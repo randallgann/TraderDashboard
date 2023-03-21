@@ -31,5 +31,17 @@ namespace TraderDashboardUi.Entity
 
         public bool BackTestActive { get; set; } = false;
 
+        public bool ActiveTrade { get; set; } = false;
+
+        public decimal ActiveTradePipStopLoss { get; set; }
+        public decimal ActiveTradePipTakeProfit { get; set; }
+
+        public string ActiveTradeBuySell { get; set; }
+
+        public string ActiveTradeClosePositionPrice { get; set; }
+        public string ActiveTradeWinLoss { get; set; }
+
+        public decimal ActiveTradeRealizedPL { get; set; } = 0.0m;
+
     }
 }
