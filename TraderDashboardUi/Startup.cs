@@ -93,6 +93,7 @@ namespace TraderDashboardUi
                 provider.GetService<TradeBook>(),
                 provider.GetService<IOandaDataProvider>()));
             services.AddSingleton<PracticeTradeThreadRunner>(provider => new PracticeTradeThreadRunner(
+                provider.GetService<ILogger<PracticeTradeThreadRunner>>(),
                 provider.GetService<TraderDashboardConfigurations>(),
                 provider.GetService<PracticeTradeSettings>(),
                 provider.GetService<ITradeManager>(),

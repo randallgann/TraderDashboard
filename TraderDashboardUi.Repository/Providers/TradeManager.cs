@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -92,10 +93,19 @@ namespace TraderDashboardUi.Repository.Providers
                         if (dr["Signal"].ToString() == "1" && tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
                         {
                             Random rand = new Random();
+                            var tradeId = rand.Next(100, 1000).ToString();
+
+                            var logInfo = new
+                            {
+                                Description = "Sell Order Created",
+                                tradeId = tradeId,
+                            };
+
+                            _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
 
                             var trade = new Position
                             {
-                                TransactionId = rand.Next(100, 1000).ToString(),
+                                TransactionId = tradeId,
                                 Time = (dr["Time"]).ToString(),
                                 Instrument = dr["Instrument"].ToString(),
                                 Price = Convert.ToDecimal(dr["Close"]),
@@ -110,9 +120,19 @@ namespace TraderDashboardUi.Repository.Providers
                         else if (dr["Signal"].ToString() == "2" && tradeBook.Positions.Count(prop => prop.BackTestActive) < (int)backTestSettings["MaxActiveTrades"])
                         {
                             Random rand = new Random();
+                            var tradeId = rand.Next(100, 1000).ToString();
+
+                            var logInfo = new
+                            {
+                                Description = "Buy Order Created",
+                                tradeId = tradeId,
+                            };
+
+                            _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
+
                             var trade = new Position
                             {
-                                TransactionId = rand.Next(100, 1000).ToString(),
+                                TransactionId = tradeId,
                                 Time = (dr["Time"]).ToString(),
                                 Instrument = dr["Instrument"].ToString(),
                                 Price = Convert.ToDecimal(dr["Close"]),
@@ -223,19 +243,18 @@ namespace TraderDashboardUi.Repository.Providers
                 {
                     // open a sell position
                     var response = _oandaDataProvider.SendSellOrder(dataRow["Instrument"].ToString()).Result;
-                    Debug.WriteLine("Trade Manager - Sell Order Executed");
-                    _logger.LogInformation("Trade Manager - Sell Order Executed to tradeFile.");
-
-                    var logInfo = new
-                    {
-                        Description = "Sell Order Created",
-                        Provider = nameof(TradeManager)
-                    };
-
-                    _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
 
                     if (response.orderCancelTransaction == null && response.orderFillTransaction != null)
                     {
+                        var logInfo = new
+                        {
+                            Description = "Buy Order Created",
+                            TradeId = response.orderFillTransaction.tradeOpened.tradeID,
+                            Instrument = response.orderFillTransaction.instrument,
+                        };
+
+                        _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
+
                         var trade = new Position
                         {
                             TransactionId = response.orderFillTransaction.tradeOpened.tradeID,
@@ -256,12 +275,18 @@ namespace TraderDashboardUi.Repository.Providers
                 {
                     // open a buy position
                     var response = _oandaDataProvider.SendBuyOrder(dataRow["Instrument"].ToString()).Result;
-                    Debug.WriteLine("Trade Manager - Buy Order Executed");
-                    _logger.LogInformation("Trade Manager - Buy Order Executed to tradeFile.");
-
 
                     if (response.orderCancelTransaction == null && response.orderFillTransaction != null)
                     {
+                        var logInfo = new
+                        {
+                            Description = "Buy Order Created",
+                            TradeId = response.orderFillTransaction.tradeOpened.tradeID,
+                            Instrument = response.orderFillTransaction.instrument,
+                        };
+
+                        _logger.LogInformation(JsonConvert.SerializeObject(logInfo));
+
                         var trade = new Position
                         {
                             TransactionId = response.orderFillTransaction.tradeOpened.tradeID,

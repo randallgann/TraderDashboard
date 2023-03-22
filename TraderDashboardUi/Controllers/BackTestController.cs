@@ -11,6 +11,7 @@ using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.StrategyProcessors;
 using TraderDashboardUi.Repository.Utilities;
 using TraderDashboardUi.ViewModels;
+using NLog;
 using static TraderDashboardUi.Models.BackTestResponseViewModel;
 
 namespace TraderDashboardUi.Controllers

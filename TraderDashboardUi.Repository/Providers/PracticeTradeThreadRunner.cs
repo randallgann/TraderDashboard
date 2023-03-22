@@ -36,12 +36,13 @@ namespace TraderDashboardUi.Repository.Providers
         public TimeSpan elapsedTime;
         public PracticeTradeSettings _practiceTradeSettings;
 
-        public PracticeTradeThreadRunner(TraderDashboardConfigurations traderDashboardConfigurations, PracticeTradeSettings practiceTradeSettings, ITradeManager tradeManager, IOandaDataProvider oandaDataProvider)
+        public PracticeTradeThreadRunner(ILogger<PracticeTradeThreadRunner> logger, TraderDashboardConfigurations traderDashboardConfigurations, PracticeTradeSettings practiceTradeSettings, ITradeManager tradeManager, IOandaDataProvider oandaDataProvider)
         {
             this.tradingDataTable = new DataTable();
             this._thread = new Thread(StartPracticeTradingThread);
             //this._thread.Start();
 
+            _logger = logger;
             _tradeManager = tradeManager;
             _practiceTradeSettings = practiceTradeSettings;
             _provider = oandaDataProvider;
@@ -111,7 +112,7 @@ namespace TraderDashboardUi.Repository.Providers
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine("Unable to get Latest or Most Recent Candles In PracticeTradeThreadRunner");
+                    _logger.LogError($"Exception occured when trying to get lastest candles - {ex}");
                 }
                 Thread.Sleep(10000);
 
