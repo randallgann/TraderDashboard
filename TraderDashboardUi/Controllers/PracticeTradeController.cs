@@ -171,6 +171,7 @@ namespace TraderDashboardUi.Controllers
             _practiceTradeThreadRunner = _serviceProvider.GetService<PracticeTradeThreadRunner>();
             _practiceTradeThreadRunner.instrument = model.Instrument;
             _practiceTradeThreadRunner.strategy = model.Strategy;
+            _practiceTradeThreadRunner.orderType = model.OrderType;
             _practiceTradeThreadRunner.StartThread();
             _practiceTradeThreadRunner.isRunning = true;
             model.isRunning = _practiceTradeThreadRunner.isRunning;

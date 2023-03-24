@@ -52,6 +52,8 @@ namespace TraderDashboardUi.Repository.Providers
         public string instrument { get; set; }
         public string strategy { get; set; }
 
+        public string orderType { get; set; }
+
         public void StartThread()
         {
             this._thread.Start();
@@ -91,7 +93,7 @@ namespace TraderDashboardUi.Repository.Providers
 
                     foreach(DataRow dr in tradingDataTable.Rows)
                     {
-                        _tradeManager.PracticeTradeExecute(dr, decimalPlaces);
+                        _tradeManager.PracticeTradeExecute(dr, orderType, decimalPlaces);
                     }
                     isFirstIteration = false;
                 }
@@ -107,7 +109,7 @@ namespace TraderDashboardUi.Repository.Providers
                         AddCandleToDataTable(tradingDataTable, candleToAddToDataTable, candles.instrument, candles.granularity);
                         Debug.WriteLine($"Candle Added To DataTable - Time: {mostRecentCandle.time} Price: {mostRecentCandle.mid.c} Rows: {_candlesDataTable.Rows.Count}");
                         _strategy.UpdateIndicators(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], decimalPlaces);
-                        _tradeManager.PracticeTradeExecute(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], decimalPlaces);
+                        _tradeManager.PracticeTradeExecute(tradingDataTable.Rows[tradingDataTable.Rows.Count - 1], orderType, decimalPlaces);
                     }
                 }
                 catch (Exception ex)

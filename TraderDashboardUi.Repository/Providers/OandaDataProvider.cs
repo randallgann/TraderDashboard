@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TraderDashboardUi.Entity;
 using TraderDashboardUi.Entity.Oanda;
+using TraderDashboardUi.Entity.Oanda.Order;
 using TraderDashboardUi.Repository.Interfaces;
 using TraderDashboardUi.Repository.Utilities;
 using static TraderDashboardUi.Entity.Oanda.OandaAccountResponse;
@@ -231,11 +232,11 @@ namespace TraderDashboardUi.Repository.Providers
             }
         }
 
-        public async Task<OrderResponse> SendBuyOrder(string instrument)
+        public async Task<OrderResponse> SendBuyMarketOrder(string instrument)
         {
             var payload = new
             {
-                order = new Order
+                order = new MarketOrder
                 {
                     Units = _practiceTradeSettings.Units.ToString(),
                     Instrument = instrument,
@@ -277,12 +278,12 @@ namespace TraderDashboardUi.Repository.Providers
 
         }
 
-        public async Task<OrderResponse> SendSellOrder(string instrument)
+        public async Task<OrderResponse> SendSellMarketOrder(string instrument)
         {
             var units = -_practiceTradeSettings.Units;
             var payload = new
             {
-                order = new Order
+                order = new MarketOrder
                 {
                     Units = units.ToString(),
                     Instrument = instrument,
@@ -351,10 +352,104 @@ namespace TraderDashboardUi.Repository.Providers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.ToString());
-
-                throw;
+                _logger.LogError(ex.ToString());
             }
+
+            return null;
+        }
+
+        public async Task<OrderResponse> SendBuyLimitOrder(string instrument, string price, string time)
+        {
+            var payload = new
+            {
+                order = new LimitOrder
+                {
+                    Price = price,
+                    Units = _practiceTradeSettings.Units.ToString(),
+                    Instrument = instrument,
+                    TimeInForce = TimeInForce.GTD,
+                    OrderType = OrderType.LIMIT,
+                    PositionFill = "DEFAULT",
+                    GtdTime = DateTime.Parse(time).ToUniversalTime().AddMinutes(5).ToString(),
+                }
+            };
+
+            _restClient ??= new RestClient();
+
+            try
+            {
+                var oandaSettings = _traderDashboardConfigurations.oandaSettings;
+                var endPoint = oandaSettings.Endpoints.FirstOrDefault(x => x.Key == "createOrder").Value;
+
+                _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+
+                // create a request
+                var request = new RestRequest(endPoint, Method.Post);
+                request.AddHeader("Authorization", oandaSettings.RequestHeaders.FirstOrDefault(x => x.Key == "Authorization").Value);
+                request.AddUrlSegment("accountId", oandaSettings.Id);
+                string jsonPayload = JsonConvert.SerializeObject(payload);
+                request.AddParameter("application/json", jsonPayload, ParameterType.RequestBody);
+
+                // get api response
+                var taskResponse = await Utilites.GetApiResponse(_restClient, request);
+
+                var result = JsonConvert.DeserializeObject<OrderResponse>(taskResponse);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+
+            return null;
+        }
+
+        public async Task<OrderResponse> SendSellLimitOrder(string instrument, string price, string time)
+        {
+            var payload = new
+            {
+                order = new LimitOrder
+                {
+                    Price = price,
+                    Units = $"-{_practiceTradeSettings.Units}",
+                    Instrument = instrument,
+                    TimeInForce = TimeInForce.GTD,
+                    OrderType = OrderType.LIMIT,
+                    PositionFill = "DEFAULT",
+                    GtdTime = DateTime.Parse(time).ToUniversalTime().AddMinutes(5).ToString(),
+                }
+            };
+
+            _restClient ??= new RestClient();
+
+            try
+            {
+                var oandaSettings = _traderDashboardConfigurations.oandaSettings;
+                var endPoint = oandaSettings.Endpoints.FirstOrDefault(x => x.Key == "createOrder").Value;
+
+                _restClient.Options.BaseUrl = new Uri(oandaSettings.BaseUrl);
+
+                // create a request
+                var request = new RestRequest(endPoint, Method.Post);
+                request.AddHeader("Authorization", oandaSettings.RequestHeaders.FirstOrDefault(x => x.Key == "Authorization").Value);
+                request.AddUrlSegment("accountId", oandaSettings.Id);
+                string jsonPayload = JsonConvert.SerializeObject(payload);
+                request.AddParameter("application/json", jsonPayload, ParameterType.RequestBody);
+
+                // get api response
+                var taskResponse = await Utilites.GetApiResponse(_restClient, request);
+
+                var result = JsonConvert.DeserializeObject<OrderResponse>(taskResponse);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+
+            return null;
         }
     }
 }

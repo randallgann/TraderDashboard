@@ -20,7 +20,7 @@ namespace TraderDashboardUi.Repository.Interfaces
         public int CandleCounter { get; set; }
 
         public TradeBook BackTestExecuteTrades(DataTable dataTable, int decimalPlaces);
-        public void PracticeTradeExecute(DataRow dataRow, int decimalPlaces);
+        public void PracticeTradeExecute(DataRow dataRow, string orderType, int decimalPlaces);
 
     }
 }

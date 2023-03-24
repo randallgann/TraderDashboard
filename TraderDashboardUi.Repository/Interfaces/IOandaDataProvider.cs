@@ -15,8 +15,11 @@ namespace TraderDashboardUi.Repository.Interfaces
 
         Task<OandaCandles> GetOandaLatestCandles(string instrument);
 
-        Task<OrderResponse> SendSellOrder(string instrument);
-        Task<OrderResponse> SendBuyOrder(string instrument);
+        Task<OrderResponse> SendSellMarketOrder(string instrument);
+        Task<OrderResponse> SendBuyMarketOrder(string instrument);
+
+        Task<OrderResponse> SendSellLimitOrder(string instrument, string price, string time);
+        Task<OrderResponse> SendBuyLimitOrder(string instrument, string price, string time);
 
         Task<OrderResponse> CloseOrderById(string orderId);
     }

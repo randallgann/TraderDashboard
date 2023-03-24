@@ -208,7 +208,7 @@ namespace TraderDashboardUi.Repository.Providers
             return tradeBook;
         }
 
-        public void PracticeTradeExecute(DataRow dataRow, int decimalPlaces)
+        public void PracticeTradeExecute(DataRow dataRow, string orderType, int decimalPlaces)
         {
             if ( _isFirstCall )
             {
@@ -235,14 +235,29 @@ namespace TraderDashboardUi.Repository.Providers
                 }
             }
 
-            if (CandleCounter > 60)
+            if (CandleCounter > 61)
             {
                 CandleCounter++;
                 // if the candle is a sell signal and the active positions count is less than maxActiveTrades
                 if (dataRow["Signal"].ToString() == "1" && tradeBook.Positions.Count(prop => prop.ActiveTrade) < _practiceTradeSettings.MaxActiveTrades)
                 {
+                    OrderResponse response = new OrderResponse();
                     // open a sell position
-                    var response = _oandaDataProvider.SendSellOrder(dataRow["Instrument"].ToString()).Result;
+                    if (orderType == "LIMIT")
+                    {
+                        response = _oandaDataProvider.SendSellLimitOrder(dataRow["Instrument"].ToString(), dataRow["Close"].ToString(), dataRow["Time"].ToString()).Result;
+                    }
+                    else
+                    {
+                        response = _oandaDataProvider.SendSellMarketOrder(dataRow["Instrument"].ToString()).Result;
+                    }
+
+                    // handle this case better by returning something to the view
+                    if (response == null)
+                    {
+                        _logger.LogError("OandaDataProvider was not able to execute trade successfully");
+                        return;
+                    }
 
                     if (response.orderCancelTransaction == null && response.orderFillTransaction != null)
                     {
@@ -273,8 +288,23 @@ namespace TraderDashboardUi.Repository.Providers
                 }
                 else if (dataRow["Signal"].ToString() == "2" && tradeBook.Positions.Count(prop => prop.ActiveTrade) < _practiceTradeSettings.MaxActiveTrades)
                 {
+                    OrderResponse response = new OrderResponse();
                     // open a buy position
-                    var response = _oandaDataProvider.SendBuyOrder(dataRow["Instrument"].ToString()).Result;
+                    if (orderType == "LIMIT")
+                    {
+                        response = _oandaDataProvider.SendBuyLimitOrder(dataRow["Instrument"].ToString(), dataRow["Close"].ToString(), dataRow["Time"].ToString()).Result;
+                    }
+                    else
+                    {
+                        response = _oandaDataProvider.SendSellMarketOrder(dataRow["Instrument"].ToString()).Result;
+                    }
+
+                    // handle this case better by returning something to the view
+                    if (response == null)
+                    {
+                        _logger.LogError("OandaDataProvider was not able to execute trade successfully");
+                        return;
+                    }
 
                     if (response.orderCancelTransaction == null && response.orderFillTransaction != null)
                     {
