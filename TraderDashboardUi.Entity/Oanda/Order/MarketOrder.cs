@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TraderDashboardUi.Entity.Oanda
+namespace TraderDashboardUi.Entity.Oanda.Order
 {
-    public class Order1
+    public class MarketOrder
     {
         [JsonProperty("units")]
         public string Units { get; set; }

@@ -7,6 +7,8 @@
 
         public string Strategy { get; set; }
 
+        public string OrderType { get; set; }
+
         public bool isRunning { get; set; } = false;
 
         public int elapsedTime { get; set; } = 0;

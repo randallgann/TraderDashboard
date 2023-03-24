@@ -38,6 +38,8 @@ namespace TraderDashboardUi.Entity
 
         public string ActiveTradeBuySell { get; set; }
 
+        public string ActiceTradeState { get; set; }
+
         public string ActiveTradeClosePositionPrice { get; set; }
         public string ActiveTradeWinLoss { get; set; }
 

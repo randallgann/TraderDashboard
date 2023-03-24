@@ -19,5 +19,8 @@ namespace TraderDashboardUi.Models
         public string Strategy { get; set; }
 
         public List<SelectListItem> Strategies { get; set; }
+        [Required]
+        [Display(Name = "OrderType")]
+        public string OrderType { get; set; }
     }
 }
